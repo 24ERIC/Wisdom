@@ -12,12 +12,7 @@ function App() {
   return (
     <Router>
       <Header />
-
       <Switch>
-        <Route path="/">
-          <Home />
-        </Route>
-
         <Route path="/news">
           <News />
         </Route>
@@ -28,6 +23,10 @@ function App() {
 
         <Route path="/tools">
           <Tools />
+        </Route>
+
+        <Route path="/">
+          <Home />
         </Route>
       </Switch>
     </Router>
