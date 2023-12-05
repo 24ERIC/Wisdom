@@ -1,13 +1,8 @@
-import { styled, alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import React, { useState } from 'react';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+import { styled, alpha } from '@mui/material/styles';
+import { Box, InputBase, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -66,33 +61,52 @@ export default function SearchBar() {
         setOpen(false);
     };
 
+    const fetchSearchResults = async (searchQuery) => {
+        try {
+            const response = await fetch('./api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: searchQuery }),
+            });
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            const data = await response.json();
+            setSearchResults(data.results);
+        } catch (error) {
+            console.error('Fetching search results failed:', error);
+        }
+    };
+
     return (
         <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', margin: 2 }}>
-            <form onSubmit={handleSearch}>
-                <Search sx={{ width: '50%' }}>
+            <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center' }}>
+                <Search sx={{ width: { sm: '50%', md: '40%' }, margin: 'auto' }}> {/* Adjust the width as needed */}
                     <SearchIconWrapper>
                         <SearchIcon />
                     </SearchIconWrapper>
                     <StyledInputBase
                         placeholder="Search…"
                         inputProps={{ 'aria-label': 'search' }}
-                        sx={{
-                            '& .MuiInputBase-input': {
-                                width: '100%',
-                                '&:focus': {
-                                    width: '100%',
-                                },
-                            },
-                        }}
                     />
                 </Search>
+                <Button type="submit" variant="contained" sx={{ marginLeft: 2 }}>Search</Button>
             </form>
 
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog open={open} onClose={handleClose} fullWidth>
                 <DialogTitle>Search Results</DialogTitle>
-                <DialogContent>
+                <DialogContent dividers>
                     {searchResults.map((result, index) => (
-                        <div key={index}>{result}</div>
+                        <Box key={index} sx={{ marginBottom: 2 }}>
+                            <Typography variant="h6">{result.title}</Typography>
+                            <Typography variant="body2" color="textSecondary">{result.date}</Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{result.tags.join(', ')}</Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
+                                {result.content.split('\n').slice(0, 4).join('\n')}
+                            </Typography>
+                        </Box>
                     ))}
                 </DialogContent>
                 <DialogActions>
