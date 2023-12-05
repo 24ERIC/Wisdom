@@ -1,12 +1,15 @@
 import React from 'react';
+import SearchBar from './Blogs/SearchBar';
 
 function Blogs() {
   return (
-    <div>
-      <h2>Blogs</h2>
-      <p>This is the Blogs page. Here you'll find blog posts and articles.</p>
-      {/* Add more content and structure as needed */}
-    </div>
+    <>
+      <SearchBar />
+      <div>
+        <h2>Blogs</h2>
+        <p>This is the Blogs page. Here you'll find blog posts and articles.</p>
+      </div>
+    </>
   );
 }
 

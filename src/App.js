@@ -50,8 +50,10 @@
 // export default App;
 
 
+
+
 import React from 'react';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import './App.css';
 
 import News from './components/News';
@@ -61,9 +63,24 @@ import Header from './components/Header';
 
 function App() {
   return (
-    <>
+    <Router>
       <Header />
-    </>
+      <Switch>
+        <Route path="/news">
+          <News />
+        </Route>
+        <Route path="/blogs">
+          <Blogs />
+        </Route>
+        <Route path="/tools">
+          <Tools />
+        </Route>
+        <Route path="/">
+          {/* This can be your Home component or any other default view */}
+          <div>Home Page</div>
+        </Route>
+      </Switch>
+    </Router>
   );
 }
 
