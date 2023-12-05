@@ -50,43 +50,35 @@
 // export default App;
 
 
-
 import React from 'react';
-import { BrowserRouter, Link, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import './App.css';
 
 import News from './components/News';
 import Blogs from './components/Blogs';
 import Tools from './components/Tools';
+import Header from './components/Header';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
+    <>
+      <Header />
+      {/* <div className="App">
         <BrowserRouter>
-          <div>
-            <Link className="App-link" to="/">Home</Link>
-            &nbsp;|&nbsp;
-            <Link className="App-link" to="/news">News</Link>
-            &nbsp;|&nbsp;
-            <Link className="App-link" to="/blogs">Blogs</Link>
-            &nbsp;|&nbsp;
-            <Link className="App-link" to="/tools">Tools</Link>
-          </div>
           <Switch>
             <Route path="/news">
-                <News />
+              <News />
             </Route>
             <Route path="/blogs">
-                <Blogs />
+              <Blogs />
             </Route>
             <Route path="/tools">
-                <Tools />
+              <Tools />
             </Route>
           </Switch>
         </BrowserRouter>
-      </header>
-    </div>
+      </div> */}
+    </>
   );
 }
 

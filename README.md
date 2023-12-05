@@ -19,3 +19,32 @@
 
 ### serevr
 - pip install SQLAlchemy Flask-SQLAlchemy
+
+### frontend - mui
+- npm install @mui/material @emotion/react @emotion/styled
+- npm install @mui/icons-material
+
+
+
+
+
+### Design
+- frontend
+    - Home
+    - News
+    - Blogs
+        - Search - header right, click to be bigger
+        - Tags tree - rest of screen
+        - New Blog - bottom right corner
+        - 
+    - Tools
+        - 
+        - 
+- backend
+    - 
+    - 
+    - 
+- server
+    - 
+    - 
+- 
