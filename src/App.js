@@ -63,21 +63,6 @@ function App() {
   return (
     <>
       <Header />
-      {/* <div className="App">
-        <BrowserRouter>
-          <Switch>
-            <Route path="/news">
-              <News />
-            </Route>
-            <Route path="/blogs">
-              <Blogs />
-            </Route>
-            <Route path="/tools">
-              <Tools />
-            </Route>
-          </Switch>
-        </BrowserRouter>
-      </div> */}
     </>
   );
 }
