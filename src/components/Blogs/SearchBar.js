@@ -52,8 +52,8 @@ export default function SearchBar() {
 
     const handleSearch = (event) => {
         event.preventDefault();
-        const results = ['Result 1', 'Result 2', 'Result 3'];
-        setSearchResults(results);
+        const searchQuery = event.target.elements.searchInput.value;
+        fetchSearchResults(searchQuery);
         setOpen(true);
     };
 
@@ -62,19 +62,22 @@ export default function SearchBar() {
     };
 
     const fetchSearchResults = async (searchQuery) => {
+        console.log(searchQuery)
         try {
-            const response = await fetch('./api/', {
-                method: 'POST',
+            const response = await fetch('http://localhost:5000/api/blog/searchResult', {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ query: searchQuery }),
             });
             if (!response.ok) {
+                console.log("helloooooooooooo")
+                console.log(response)
+                console.log("helloooooooooooo")
                 throw new Error(`Error: ${response.status}`);
             }
             const data = await response.json();
-            setSearchResults(data.results);
+            setSearchResults(data);
         } catch (error) {
             console.error('Fetching search results failed:', error);
         }
@@ -83,11 +86,12 @@ export default function SearchBar() {
     return (
         <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', margin: 2 }}>
             <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center' }}>
-                <Search sx={{ width: { sm: '50%', md: '40%' }, margin: 'auto' }}> {/* Adjust the width as needed */}
+                <Search sx={{ width: { sm: '50%', md: '40%' }, margin: 'auto' }}> 
                     <SearchIconWrapper>
                         <SearchIcon />
                     </SearchIconWrapper>
                     <StyledInputBase
+                        name="searchInput"
                         placeholder="Search…"
                         inputProps={{ 'aria-label': 'search' }}
                     />
@@ -100,10 +104,9 @@ export default function SearchBar() {
                 <DialogContent dividers>
                     {searchResults.map((result, index) => (
                         <Box key={index} sx={{ marginBottom: 2 }}>
-                            <Typography variant="h6">{result.title}</Typography>
-                            <Typography variant="body2" color="textSecondary">{result.date}</Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{result.tags.join(', ')}</Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
+                            <Typography variant="h6">{result.title} -- {result.date}</Typography>
+                            <Typography variant="body2" color="textSecondary">{result.tags.join(', ')}</Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
                                 {result.content.split('\n').slice(0, 4).join('\n')}
                             </Typography>
                         </Box>

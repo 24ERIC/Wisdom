@@ -19,6 +19,7 @@
 
 ### serevr
 - pip install SQLAlchemy Flask-SQLAlchemy
+- npm install http-proxy-middleware --save
 
 ### frontend - mui
 - npm install @mui/material @emotion/react @emotion/styled

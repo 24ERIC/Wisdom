@@ -1,8 +1,9 @@
-import time
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 db = SQLAlchemy(app)
 
@@ -19,29 +20,17 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    # Additional fields, like tags, can be added here
 
+FAKE_DATA = [
+    {'title': 'Blog Post 1', 'tags': ['Tag1', 'Tag2'], 'date': '2023-01-01', 'content': 'This is the content of blog post 1...'},
+    {'title': 'Blog Post 2', 'tags': ['Tag3', 'Tag4'], 'date': '2023-02-01', 'content': 'This is the content of blog post 2...'},
+    {'title': 'Blog Post 3', 'tags': ['Tag5', 'Tag6'], 'date': '2023-03-01', 'content': 'This is the content of blog post 3...'}
+]
 
-@app.errorhandler(404)
-def not_found(e):
-    return app.send_static_file('index.html')
+@app.route('/api/blog/searchResult', methods=['GET'])
+def get_search_result():
+    search_query = request.args.get('query')
+    return jsonify(FAKE_DATA)
 
-
-@app.route('/')
-def index():
-    return app.send_static_file('index.html')
-
-
-@app.route('/api/time')
-def get_current_time():
-    return {'time': time.time()}
-
-
-
-
-@app.route('/add_article', methods=['POST'])
-def add_article():
-    new_article = Article(title="Sample Title", content="Sample content.")
-    db.session.add(new_article)
-    db.session.commit()
-    return 'Article added successfully!'
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
