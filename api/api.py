@@ -10,6 +10,27 @@ db = SQLAlchemy(app)
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('tag.id'), nullable=True)
+    children = db.relationship('Tag', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
+
+with app.app_context():
+    db.create_all()
+
+@app.route('/api/blog/tags', methods=['GET'])
+def get_tags():
+    tags = Tag.query.all()
+
+    def serialize(tag):
+        return {
+            'id': tag.id,
+            'name': tag.name,
+            'parent_id': tag.parent_id,
+            'children': [serialize(child) for child in tag.children]
+        }
+
+    root_tags = [serialize(tag) for tag in tags if tag.parent_id is None]
+    return jsonify(root_tags)
+
 
 article_tags = db.Table('article_tags',
     db.Column('article_id', db.Integer, db.ForeignKey('article.id'), primary_key=True),
@@ -34,3 +55,4 @@ def get_search_result():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
