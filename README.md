@@ -18,22 +18,24 @@
 
 
 ### Design
-- frontend
-    - Home
-    - News
-    - Blogs
-        - Search - header right, click to be bigger
-        - Tags tree - rest of screen
-        - New Blog - bottom right corner
-        - 
-    - Tools
-        - 
-        - 
-- backend
+- Home
     - 
     - 
     - 
-- server
+    - 
+- News
+    - get list of all news
     - 
     - 
-- 
+- Blogs
+    - Search - header right, click to be bigger
+    - Tags tree - rest of screen
+    - New Blog - bottom right corner
+    - 
+    - 
+    - 
+    - 
+    - 
+- Tools
+    - 
+    - 

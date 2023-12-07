@@ -1,11 +1,14 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_migrate import Migrate
+
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
