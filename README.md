@@ -1,13 +1,4 @@
-# Wisdom
-
-
-| [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
-
-
-
-
-
-
+<!-- 
 ### frontend
 - export NODE_OPTIONS=--openssl-legacy-provider
 - npm install @mui/material @emotion/react @emotion/styled
@@ -21,31 +12,32 @@
 - npm install http-proxy-middleware --save
 - pip install Flask-Migrate
 - pip install markdown
-- npm install axios
+- npm install axios 
+-->
+
+
+<!-- Template
+# 
+
+#| [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
+
+
+- [AIML](./AIML/AIML.md)
+-->
+# Home
+
+
+# | [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
+
+
+- [AIML](./AIML/AIML.md)
+- [CyberSecurity](./CyberSecurity/CyberSecurity.md)
+- [Finance](./Finance/Finance.md)
 
 
 
 
 
-### Design
-- Home
-    - 
-    - 
-    - 
-    - 
-- News
-    - get list of all news
-    - 
-    - 
-- Blogs
-    - Search - header right, click to be bigger
-    - Tags tree - rest of screen
-    - New Blog - bottom right corner
-    - 
-    - 
-    - 
-    - 
-    - 
-- Tools
-    - 
-    - 
+
+
+
