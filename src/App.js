@@ -14,7 +14,7 @@ function App() {
       <Header />
       <Switch>
         <Route path="/tools" component={Tools} />
-        <Route path="/" component={Home} />
+        <Route path="/" component={Tools} />
       </Switch>
     </Router>
   );
