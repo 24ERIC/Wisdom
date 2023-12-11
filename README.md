@@ -1,4 +1,12 @@
-<!-- 
+# [Tool](http://localhost:3000/tools) 
+
+| Table of Content |
+| ---------------- |
+| [ML](Blog/ML.md) |
+| [CyberSecurity](Blog/CyberSecurity.md) |
+| [Finance](Blog/Finance.md) |
+
+
 ### frontend
 - export NODE_OPTIONS=--openssl-legacy-provider
 - npm install @mui/material @emotion/react @emotion/styled
@@ -13,18 +21,6 @@
 - pip install Flask-Migrate
 - pip install markdown
 - npm install axios 
--->
-
-
-## Home | [Tool](http://localhost:3000/tools) 
-
-| Table of Content |
-| ---------------- |
-| [AIML](Blog/AIML.md) |
-| [CyberSecurity](Blog/CyberSecurity.md) |
-| [Finance](Blog/Finance.md) |
-
-
 
 
 
