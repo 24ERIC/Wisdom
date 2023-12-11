@@ -21,6 +21,10 @@
 
 #| [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
 
+- [](.//)
+- [](.//)
+- [](.//)
+- [](.//)
 
 - [AIML](./AIML/AIML.md)
 -->
@@ -30,7 +34,7 @@
 # | [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
 
 
-- [AIML](./AIML/AIML.md)
+- [AIML](Blog/AIML.md)
 - [CyberSecurity](./CyberSecurity/CyberSecurity.md)
 - [Finance](./Finance/Finance.md)
 
