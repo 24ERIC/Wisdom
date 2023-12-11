@@ -1,13 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-function Tools() {
+export default function Tools() {
+  const [query, setQuery] = useState('');
+  const [tag, setTag] = useState('');
+  const [results, setResults] = useState([]);
+
+  const handleSearch = async () => {
+    const response = await fetch(`/api/search?query=${query}&tag=${tag}`);
+    const data = await response.json();
+    setResults(data);
+  };
+
   return (
     <div>
-      <h2>Tools</h2>
-      <p>This is the Tools page. It will feature various tools and resources.</p>
-      {/* Add more content and structure as needed */}
+      <input type="text" placeholder="Search Query" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <input type="text" placeholder="Tags (comma-separated)" value={tag} onChange={(e) => setTag(e.target.value)} />
+      <button onClick={handleSearch}>Search</button>
+      <ul>
+        {results.map(item => (
+          <li key={item.path}>
+            <a href={item.path}>{item.name}</a> - Tags: {item.tags.join(', ')}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
-
-export default Tools;
