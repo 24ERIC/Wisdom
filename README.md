@@ -1,5 +1,13 @@
 # Wisdom
 
+
+| [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
+
+
+
+
+
+
 ### frontend
 - export NODE_OPTIONS=--openssl-legacy-provider
 - npm install @mui/material @emotion/react @emotion/styled

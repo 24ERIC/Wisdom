@@ -61,7 +61,7 @@ function Header() {
                     </Link>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block' }}>
-                            <Link href="https://24eric.github.io/wisdom_blog/" style={{ textDecoration: 'none', color: 'white' }}>Blogs</Link>
+                            <Link href="https://24eric.github.io/Wisdom/" style={{ textDecoration: 'none', color: 'white' }}>Blogs</Link>
                         </Button>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block' }}>
                             <Link href="/tools" style={{ textDecoration: 'none', color: 'white' }}>Tools</Link>
