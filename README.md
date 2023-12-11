@@ -16,24 +16,11 @@
 -->
 
 
-<!--
-##  | [Tool](http://localhost:3000/tools) 
-
-- [](/.md)
-- [](/.md)
-- [](/.md)
-- [](/.md)
--->
 ## Home | [Tool](http://localhost:3000/tools) 
-
-
-- [AIML](Blog/AIML.md)
-- [CyberSecurity](./CyberSecurity/CyberSecurity.md)
-- [Finance](./Finance/Finance.md)
-
-| - [AIML](Blog/AIML.md) |
-| - [CyberSecurity](./CyberSecurity/CyberSecurity.md) |
-| - [Finance](./Finance/Finance.md) |
+| Table of Content |
+| [AIML](Blog/AIML.md) |
+| [CyberSecurity](./CyberSecurity/CyberSecurity.md) |
+| [Finance](./Finance/Finance.md) |
 
 
 
