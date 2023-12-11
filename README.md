@@ -17,10 +17,12 @@
 
 
 ## Home | [Tool](http://localhost:3000/tools) 
+
 | Table of Content |
+| ---------------- |
 | [AIML](Blog/AIML.md) |
-| [CyberSecurity](./CyberSecurity/CyberSecurity.md) |
-| [Finance](./Finance/Finance.md) |
+| [CyberSecurity](Blog/CyberSecurity.md) |
+| [Finance](Blog/Finance.md) |
 
 
 
