@@ -1,3 +1,6 @@
+import markdown
+import os
+
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -9,6 +12,24 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+# Existing code...
+
+@app.route('/api/blog/markdown/<path:filename>', methods=['GET'])
+def get_markdown_file(filename):
+    md_file_path = os.path.join('../blog', filename)
+    if not os.path.exists(md_file_path) or not md_file_path.endswith('.md'):
+        return jsonify({'error': 'File not found'}), 404
+
+    with open(md_file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        html_content = markdown.markdown(content)
+        return jsonify({'content': html_content})
+
+
+
+
+
+
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)

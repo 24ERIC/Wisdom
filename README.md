@@ -12,6 +12,8 @@
 - pip install SQLAlchemy Flask-SQLAlchemy
 - npm install http-proxy-middleware --save
 - pip install Flask-Migrate
+- pip install markdown
+- npm install axios
 
 
 
