@@ -16,27 +16,24 @@
 -->
 
 
-<!-- Template
-# 
+<!--
+##  | [Tool](http://localhost:3000/tools) 
 
-#| [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
-
-- [](.//)
-- [](.//)
-- [](.//)
-- [](.//)
-
-- [AIML](./AIML/AIML.md)
+- [](/.md)
+- [](/.md)
+- [](/.md)
+- [](/.md)
 -->
-# Home
-
-
-# | [Home](https://24eric.github.io/Wisdom/) | [Tool](http://localhost:3000/tools) |
+## Home | [Tool](http://localhost:3000/tools) 
 
 
 - [AIML](Blog/AIML.md)
 - [CyberSecurity](./CyberSecurity/CyberSecurity.md)
 - [Finance](./Finance/Finance.md)
+
+| - [AIML](Blog/AIML.md) |
+| - [CyberSecurity](./CyberSecurity/CyberSecurity.md) |
+| - [Finance](./Finance/Finance.md) |
 
 
 
