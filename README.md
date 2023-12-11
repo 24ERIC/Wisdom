@@ -8,6 +8,20 @@
 | [Software](Blog/Software.md) |
 
 
+
+# Development Plan
+
+- 
+
+
+
+
+
+
+
+
+
+
 ### frontend
 - export NODE_OPTIONS=--openssl-legacy-provider
 - npm install @mui/material @emotion/react @emotion/styled
