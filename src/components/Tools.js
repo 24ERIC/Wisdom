@@ -17,9 +17,10 @@ export default function Tools() {
       <input type="text" placeholder="Tags (comma-separated)" value={tag} onChange={(e) => setTag(e.target.value)} />
       <button onClick={handleSearch}>Search</button>
       <ul>
+
         {results.map(item => (
           <li key={item.path}>
-            <a href={item.path}>{item.name}</a> - Tags: {item.tags.join(', ')}
+            <a href={item.path} target="_blank" rel="noopener noreferrer">{item.name}</a> - Tags: {item.tags.join(', ')}
           </li>
         ))}
       </ul>
