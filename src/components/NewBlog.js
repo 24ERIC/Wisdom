@@ -19,7 +19,7 @@ function CustomToolbar({ handleOpen }) {
   return (
     <GridToolbarContainer>
       <GridToolbar />
-      <Button variant="outlined" color="primary" onClick={handleOpen} style={{ marginLeft: 'auto' }}>{/* <Button variant="outlined" color="primary" onClick={handleOpen} style={{ marginLeft: 'auto' }}> */}
+      <Button color="primary" onClick={handleOpen}>{/* <Button variant="outlined" color="primary" onClick={handleOpen} style={{ marginLeft: 'auto' }}> */}
         New Blog
       </Button>
     </GridToolbarContainer>
@@ -100,7 +100,7 @@ const NewBlog = () => {
             type="text"
             fullWidth
             multiline
-            rows={4}
+            rows={15}
             variant="outlined"
             onChange={handleChange}
           />

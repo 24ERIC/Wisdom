@@ -16,7 +16,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 # migrate = Migrate(app, db)
 
 
-from flask import render_template
+from flask import render_template, abort
 import logging
 import sqlite3
 
@@ -125,16 +125,21 @@ def db_operation(query, args=(), commit=False):
         else:
             return cursor.fetchall()  # Useful for GET operations
 
-@app.route("/api/blogs", methods=["GET", "POST"])
-def blog_posts():
-    if request.method == "GET":
-        posts = db_operation("SELECT * FROM blogs")
-        return jsonify(posts)
-    elif request.method == "POST":
-        data = request.get_json()
-        id = db_operation("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
-                          (data['title'], data['tags'], data['content']), commit=True)
-        return jsonify({"id": id}), 201
+@app.route('/api/blogs', methods=['POST'])
+def add_blog_post():
+    try:
+        data = request.json
+        with sqlite3.connect('blog_database.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
+                           (data['title'], data['tags'], data['content']))
+            conn.commit()
+            return jsonify({"id": cursor.lastrowid}), 201
+    except Exception as e:
+        # Log the exception for debugging purposes
+        app.logger.error('Failed to add blog post: %s', e)
+        # Return a generic error message to the client
+        abort(500, description="Internal Server Error")
 
 @app.route("/api/blogs/<int:blog_id>", methods=["GET", "PUT", "DELETE"])
 def blog_post(blog_id):
@@ -152,8 +157,8 @@ def blog_post(blog_id):
 
 if __name__ == '__main__':
     # Blog Search Indexing, Generate/Update blog_index.json
-    with open('api/blog_index.json', 'w') as index_file:
-        json.dump(index_blog('Blog'), index_file)
+    # with open('api/blog_index.json', 'w') as index_file:
+    #     json.dump(index_blog('Blog'), index_file)
     app.run(host='0.0.0.0', port=5000)
     app.run(debug=True)
     
