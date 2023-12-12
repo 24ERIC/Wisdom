@@ -1,26 +1,3 @@
-# [Tool](http://localhost:3000/tools) 
-
-| Table of Content |
-| ---------------- |
-| [CyberSecurity](Blog/CyberSecurity.md) |
-| [Finance](Blog/Finance.md) |
-| [ML](Blog/ML.md) |
-| [Software](Blog/Software.md) |
-
-
-
-# Development Plan
-
-- 
-
-
-
-
-
-
-
-
-
 
 ### frontend
 - export NODE_OPTIONS=--openssl-legacy-provider

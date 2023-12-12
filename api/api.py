@@ -81,54 +81,20 @@ def search():
     return jsonify(results)
 #########################################################################################################
 
-
-
-#########################################################################################################
-# Blog Search Indexing, Generate/Update blog_index.json #################################################
-#########################################################################################################
-# def extract_tags(content):
-#     match = re.search(r'^Tags:\s*(.+)$', content, re.MULTILINE)
-#     if match:
-#         return [tag.strip() for tag in match.group(1).split(',')]
-#     return []
-
-# def index_blog(directory):
-#     index = []
-#     base_url = "https://24eric.github.io/Wisdom/Blog/"
-#     for root, dirs, files in os.walk(directory):
-#         for file in files:
-#             if file.endswith('.md'):
-#                 relative_path = os.path.relpath(root, directory)
-#                 filepath = os.path.join(root, file)
-#                 with open(filepath, 'r') as md_file:
-#                     content = md_file.read()
-#                 tags = extract_tags(content)
-#                 # Convert file path to URL
-#                 if relative_path != '.':
-#                     web_path = base_url + os.path.join(relative_path, file).replace('.md', '.html').replace('\\', '/')
-#                 else:
-#                     web_path = base_url + file.replace('.md', '.html')
-#                 index.append({'name': file, 'path': web_path, 'tags': tags})
-#                 print(f'Indexed: {file}')
-#     return index
-#########################################################################################################
-
-
-
 def db_operation(query, args=(), commit=False):
     with sqlite3.connect('blog_database.db') as conn:
         cursor = conn.cursor()
         cursor.execute(query, args)
         if commit:
             conn.commit()
-            return cursor.lastrowid  # Useful for POST operations
+            return cursor.lastrowid
         else:
-            return cursor.fetchall()  # Useful for GET operations
+            return cursor.fetchall()
 
 @app.route('/api/blogs', methods=['POST'])
 def add_blog_post():
     try:
-        data = request.get_json()  # More explicit way to get JSON data
+        data = request.get_json()
         if not all(key in data for key in ['title', 'tags', 'content']):
             return jsonify({'error': 'Missing title, tags, or content'}), 400
 
@@ -176,9 +142,6 @@ def get_all_blogs():
 
 
 if __name__ == '__main__':
-    # Blog Search Indexing, Generate/Update blog_index.json
-    # with open('api/blog_index.json', 'w') as index_file:
-    #     json.dump(index_blog('Blog'), index_file)
     app.run(host='0.0.0.0', port=5000)
     app.run(debug=True)
     
