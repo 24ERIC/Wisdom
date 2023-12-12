@@ -28,6 +28,7 @@
 - npm install @mui/icons-material
 - npm install react-treebeard
 - npm install @mui/x-data-grid
+- npm install react-markdown
 
 ### backend
 - flask run

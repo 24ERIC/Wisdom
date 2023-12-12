@@ -15,6 +15,7 @@
     "axios": "^1.6.2",
     "http-proxy-middleware": "^2.0.6",
     "lodash.debounce": "^4.0.8",
+    "markdown-to-jsx": "^7.3.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
@@ -43,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "webpack": "^5.89.0"
   }
 }
