@@ -32,11 +32,16 @@ const NewBlog = () => {
   const [formData, setFormData] = useState({ title: '', tags: '', content: '' });
 
   useEffect(() => {
-    // Replace with the correct endpoint for fetching blog posts
-    axios.get('/api/blogs')
-      .then(response => setRows(response.data))
+    axios.get('/api/blogs') // Ensure URL is correct
+      .then(response => {
+          if (Array.isArray(response.data)) {
+              setRows(response.data);
+          } else {
+              console.error('Expected an array of blog posts, but received:', response.data);
+          }
+      })
       .catch(error => console.error('Error fetching blog posts:', error));
-  }, []);
+}, []);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

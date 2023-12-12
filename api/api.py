@@ -11,9 +11,9 @@ import re
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-# db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog_database.db'
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 from flask import render_template, abort
@@ -86,31 +86,31 @@ def search():
 #########################################################################################################
 # Blog Search Indexing, Generate/Update blog_index.json #################################################
 #########################################################################################################
-def extract_tags(content):
-    match = re.search(r'^Tags:\s*(.+)$', content, re.MULTILINE)
-    if match:
-        return [tag.strip() for tag in match.group(1).split(',')]
-    return []
+# def extract_tags(content):
+#     match = re.search(r'^Tags:\s*(.+)$', content, re.MULTILINE)
+#     if match:
+#         return [tag.strip() for tag in match.group(1).split(',')]
+#     return []
 
-def index_blog(directory):
-    index = []
-    base_url = "https://24eric.github.io/Wisdom/Blog/"
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.endswith('.md'):
-                relative_path = os.path.relpath(root, directory)
-                filepath = os.path.join(root, file)
-                with open(filepath, 'r') as md_file:
-                    content = md_file.read()
-                tags = extract_tags(content)
-                # Convert file path to URL
-                if relative_path != '.':
-                    web_path = base_url + os.path.join(relative_path, file).replace('.md', '.html').replace('\\', '/')
-                else:
-                    web_path = base_url + file.replace('.md', '.html')
-                index.append({'name': file, 'path': web_path, 'tags': tags})
-                print(f'Indexed: {file}')
-    return index
+# def index_blog(directory):
+#     index = []
+#     base_url = "https://24eric.github.io/Wisdom/Blog/"
+#     for root, dirs, files in os.walk(directory):
+#         for file in files:
+#             if file.endswith('.md'):
+#                 relative_path = os.path.relpath(root, directory)
+#                 filepath = os.path.join(root, file)
+#                 with open(filepath, 'r') as md_file:
+#                     content = md_file.read()
+#                 tags = extract_tags(content)
+#                 # Convert file path to URL
+#                 if relative_path != '.':
+#                     web_path = base_url + os.path.join(relative_path, file).replace('.md', '.html').replace('\\', '/')
+#                 else:
+#                     web_path = base_url + file.replace('.md', '.html')
+#                 index.append({'name': file, 'path': web_path, 'tags': tags})
+#                 print(f'Indexed: {file}')
+#     return index
 #########################################################################################################
 
 
@@ -128,32 +128,52 @@ def db_operation(query, args=(), commit=False):
 @app.route('/api/blogs', methods=['POST'])
 def add_blog_post():
     try:
-        data = request.json
+        data = request.get_json()  # More explicit way to get JSON data
+        if not all(key in data for key in ['title', 'tags', 'content']):
+            return jsonify({'error': 'Missing title, tags, or content'}), 400
+
         with sqlite3.connect('blog_database.db') as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
                            (data['title'], data['tags'], data['content']))
             conn.commit()
             return jsonify({"id": cursor.lastrowid}), 201
+    except sqlite3.Error as e:
+        app.logger.error('Database error: %s', e)
+        abort(500, description="Database Error")
     except Exception as e:
-        # Log the exception for debugging purposes
         app.logger.error('Failed to add blog post: %s', e)
-        # Return a generic error message to the client
         abort(500, description="Internal Server Error")
 
-@app.route("/api/blogs/<int:blog_id>", methods=["GET", "PUT", "DELETE"])
+@app.route("/api/blogs/<int:blog_id>", methods=["PUT", "DELETE"])
 def blog_post(blog_id):
-    if request.method == "GET":
-        post = db_operation("SELECT * FROM blogs WHERE id = ?", (blog_id,))
-        return jsonify(post)
-    elif request.method == "PUT":
-        data = request.get_json()
-        db_operation("UPDATE blogs SET title = ?, tags = ?, content = ? WHERE id = ?",
-                     (data['title'], data['tags'], data['content'], blog_id), commit=True)
-        return jsonify({"success": True}), 200
-    elif request.method == "DELETE":
-        db_operation("DELETE FROM blogs WHERE id = ?", (blog_id,), commit=True)
-        return jsonify({"success": True}), 200
+    try:
+        if request.method == "PUT":
+            data = request.get_json()
+            if not all(key in data for key in ['title', 'tags', 'content']):
+                return jsonify({'error': 'Missing title, tags, or content'}), 400
+            db_operation("UPDATE blogs SET title = ?, tags = ?, content = ? WHERE id = ?",
+                         (data['title'], data['tags'], data['content'], blog_id), commit=True)
+            return jsonify({"success": True}), 200
+
+        elif request.method == "DELETE":
+            db_operation("DELETE FROM blogs WHERE id = ?", (blog_id,), commit=True)
+            return jsonify({"success": True}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/blogs', methods=['GET'])
+def get_all_blogs():
+    try:
+        all_posts = db_operation("SELECT * FROM blogs")
+        # Format the results into a list of dicts, or use a model serialization approach
+        posts = [{"id": post[0], "title": post[1], "tags": post[2], "content": post[3]} for post in all_posts]
+        return jsonify(posts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 if __name__ == '__main__':
     # Blog Search Indexing, Generate/Update blog_index.json
