@@ -96,6 +96,8 @@ const Blogs = () => {
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 50 },
+        { field: 'title', headerName: 'Title', width: 200 },
+        { field: 'content', headerName: 'Content', width: 800 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -117,9 +119,7 @@ const Blogs = () => {
                 );
             }
         },
-        { field: 'title', headerName: 'Title', width: 200 },
-        { field: 'content', headerName: 'Content', flex: 1, minWidth: 200 },
-        { field: 'tags', headerName: 'Tags', width: 200 },
+        { field: 'tags', headerName: 'Tags', width: 300 },
 
     ];
 
@@ -134,12 +134,12 @@ const Blogs = () => {
                 slots={{
                     toolbar: (props) => (
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>
+                            <GridToolbar {...props} />
+                            <div style={{ marginLeft: '210px' }}>
                                 <Button color="primary" onClick={handleOpen}>
                                     New Blog
                                 </Button>
                             </div>
-                            <GridToolbar {...props} />
                         </div>
                     ),
                 }}
