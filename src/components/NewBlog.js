@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridToolbarContainer } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
@@ -13,18 +12,17 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from 'axios';
 
+const columns = [
+  { field: 'id', headerName: 'ID', width: 90 },
+  { field: 'title', headerName: 'Title', width: 200 },
+  { field: 'tags', headerName: 'Tags', width: 200 },
+  { field: 'content', headerName: 'Content', flex: 1, minWidth: 300 },
+];
 
-function CustomToolbar({ handleOpen, setSearchText }) {
+function CustomToolbar({ handleOpen }) {
   return (
     <GridToolbarContainer>
-      <GridToolbarExport />
-      <GridToolbarFilterButton />
-      <TextField
-        variant="outlined"
-        placeholder="Search..."
-        onChange={(e) => setSearchText(e.target.value)}
-        style={{ marginLeft: 16, marginBottom: 8 }}
-      />
+      <GridToolbar />
       <Button color="primary" onClick={handleOpen} style={{ marginLeft: 'auto' }}>
         New Blog
       </Button>
@@ -36,21 +34,20 @@ const NewBlog = () => {
   const [rows, setRows] = useState([]);
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ id: null, title: '', tags: '', content: '' });
-  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     axios.get('/api/blogs')
       .then(response => {
-        if (Array.isArray(response.data)) {
-          setRows(response.data);
-        } else {
-          console.error('Expected an array of blog posts, but received:', response.data);
-        }
+          if (Array.isArray(response.data)) {
+              setRows(response.data);
+          } else {
+              console.error('Expected an array of blog posts, but received:', response.data);
+          }
       })
       .catch(error => console.error('Error fetching blog posts:', error));
-  }, []);
+}, []);
 
-  const handleOpen = () => {
+const handleOpen = () => {
     setFormData({ id: null, title: '', tags: '', content: '' });
     setOpen(true);
   };
@@ -71,6 +68,10 @@ const NewBlog = () => {
       .catch((error) => console.error('Error adding/updating blog post:', error));
   };
 
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
   const handleEdit = (blog) => {
     setFormData(blog);
     setOpen(true);
@@ -89,23 +90,6 @@ const NewBlog = () => {
     // This is a placeholder implementation
     alert(`Reading: ${blog.content}`);
   };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
-  
-
-  const filteredRows = rows.filter((row) => {
-    return row.title.toLowerCase().includes(searchText.toLowerCase()) ||
-           row.tags.toLowerCase().includes(searchText.toLowerCase()) ||
-           row.content.toLowerCase().includes(searchText.toLowerCase());
-  });
-
-
-
-
-
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'title', headerName: 'Title', width: 200 },
@@ -134,26 +118,22 @@ const NewBlog = () => {
     }
   ];
 
-
-
-
-
   return (
     <div style={{ height: 600, width: '100%' }}>
       <DataGrid
-        rows={filteredRows}
+        rows={rows}
         columns={columns}
         pageSize={10}
         rowsPerPageOptions={[5, 10, 20]}
         checkboxSelection
         components={{
-          Toolbar: (props) => <CustomToolbar {...props} handleOpen={handleOpen} setSearchText={setSearchText} />,
+          Toolbar: props => <CustomToolbar {...props} handleOpen={handleOpen} />,
         }}
         disableSelectionOnClick
         density="comfortable"
       />
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>{formData.id ? 'Edit Blog Post' : 'Add New Blog Post'}</DialogTitle>
+        <DialogTitle>Add New Blog Post</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -194,7 +174,7 @@ const NewBlog = () => {
             Cancel
           </Button>
           <Button onClick={handleAddOrUpdateBlogPost} color="primary">
-            {formData.id ? 'Save' : 'Add'}
+          {formData.id ? 'Save' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
