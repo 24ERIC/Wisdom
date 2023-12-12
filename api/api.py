@@ -108,11 +108,11 @@ def index_blog(directory):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-    app.run(debug=True)
-    
     # Blog Search Indexing, Generate/Update blog_index.json
     with open('api/blog_index.json', 'w') as index_file:
         json.dump(index_blog('Blog'), index_file)
+    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
+    
     
     
