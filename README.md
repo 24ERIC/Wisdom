@@ -27,6 +27,7 @@
 - npm install @mui/material @emotion/react @emotion/styled
 - npm install @mui/icons-material
 - npm install react-treebeard
+- npm install @mui/x-data-grid
 
 ### backend
 - flask run

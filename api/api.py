@@ -15,6 +15,14 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 # db = SQLAlchemy(app)
 # migrate = Migrate(app, db)
 
+
+from flask import render_template
+import logging
+import sqlite3
+
+
+
+logging.basicConfig(level=logging.DEBUG)
 #########################################################################################################
 # Table of Content
 # - 
@@ -106,6 +114,41 @@ def index_blog(directory):
 #########################################################################################################
 
 
+
+def db_operation(query, args=(), commit=False):
+    with sqlite3.connect('blog_database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, args)
+        if commit:
+            conn.commit()
+            return cursor.lastrowid  # Useful for POST operations
+        else:
+            return cursor.fetchall()  # Useful for GET operations
+
+@app.route("/api/blogs", methods=["GET", "POST"])
+def blog_posts():
+    if request.method == "GET":
+        posts = db_operation("SELECT * FROM blogs")
+        return jsonify(posts)
+    elif request.method == "POST":
+        data = request.get_json()
+        id = db_operation("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
+                          (data['title'], data['tags'], data['content']), commit=True)
+        return jsonify({"id": id}), 201
+
+@app.route("/api/blogs/<int:blog_id>", methods=["GET", "PUT", "DELETE"])
+def blog_post(blog_id):
+    if request.method == "GET":
+        post = db_operation("SELECT * FROM blogs WHERE id = ?", (blog_id,))
+        return jsonify(post)
+    elif request.method == "PUT":
+        data = request.get_json()
+        db_operation("UPDATE blogs SET title = ?, tags = ?, content = ? WHERE id = ?",
+                     (data['title'], data['tags'], data['content'], blog_id), commit=True)
+        return jsonify({"success": True}), 200
+    elif request.method == "DELETE":
+        db_operation("DELETE FROM blogs WHERE id = ?", (blog_id,), commit=True)
+        return jsonify({"success": True}), 200
 
 if __name__ == '__main__':
     # Blog Search Indexing, Generate/Update blog_index.json
