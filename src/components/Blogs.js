@@ -14,18 +14,6 @@ import axios from 'axios';
 import Markdown from 'markdown-to-jsx';
 
 
-
-function CustomToolbar({ handleOpen }) {
-    return (
-        <GridToolbarContainer>
-            <GridToolbar />
-            <Button color="primary" onClick={handleOpen} style={{ marginLeft: 'auto' }}>
-                New Blog
-            </Button>
-        </GridToolbarContainer>
-    );
-}
-
 const Blogs = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
@@ -107,15 +95,12 @@ const Blogs = () => {
     };
 
     const columns = [
-        { field: 'id', headerName: 'ID', width: 90 },
-        { field: 'title', headerName: 'Title', width: 200 },
-        { field: 'tags', headerName: 'Tags', width: 200 },
-        { field: 'content', headerName: 'Content', flex: 1, minWidth: 300 },
+        { field: 'id', headerName: 'ID', width: 50 },
         {
             field: 'actions',
             headerName: 'Actions',
             sortable: false,
-            width: 150,
+            width: 200,
             renderCell: (params) => {
                 return (
                     <>
@@ -131,22 +116,41 @@ const Blogs = () => {
                     </>
                 );
             }
-        }
+        },
+        { field: 'title', headerName: 'Title', width: 200 },
+        { field: 'content', headerName: 'Content', flex: 1, minWidth: 200 },
+        { field: 'tags', headerName: 'Tags', width: 200 },
+
     ];
 
     return (
-        <div style={{ height: 600, width: '100%' }}>
+        <div style={{ height: 750, width: '100%' }}>
             <DataGrid
                 rows={rows}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[5, 10, 20]}
-                checkboxSelection
-                components={{
-                    Toolbar: props => <CustomToolbar {...props} handleOpen={handleOpen} />,
+                disableCheckboxSelection
+                slots={{
+                    toolbar: (props) => (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div>
+                                <Button color="primary" onClick={handleOpen}>
+                                    New Blog
+                                </Button>
+                            </div>
+                            <GridToolbar {...props} />
+                        </div>
+                    ),
+                }}
+                slotProps={{
+                    toolbar: {
+                        showQuickFilter: true,
+                    },
                 }}
                 disableSelectionOnClick
-                density="comfortable"
+                disableRowSelectionOnClick
+                density="standard"
             />
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
                 <DialogTitle>Add New Blog Post</DialogTitle>
