@@ -23,14 +23,6 @@ import sqlite3
 
 
 logging.basicConfig(level=logging.DEBUG)
-#########################################################################################################
-# Table of Content
-# - 
-# - 
-# - 
-# - 
-#########################################################################################################
-
 
 
 #########################################################################################################
@@ -82,7 +74,7 @@ def search():
 #########################################################################################################
 
 def db_operation(query, args=(), commit=False):
-    with sqlite3.connect('blog_database.db') as conn:
+    with sqlite3.connect('./api/blog_database.db') as conn:
         cursor = conn.cursor()
         cursor.execute(query, args)
         if commit:
@@ -98,7 +90,7 @@ def add_blog_post():
         if not all(key in data for key in ['title', 'tags', 'content']):
             return jsonify({'error': 'Missing title, tags, or content'}), 400
 
-        with sqlite3.connect('blog_database.db') as conn:
+        with sqlite3.connect('./api/blog_database.db') as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
                            (data['title'], data['tags'], data['content']))
