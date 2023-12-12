@@ -30,9 +30,10 @@ const NewBlog = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
     const [formData, setFormData] = useState({ id: null, title: '', tags: '', content: '' });
-
     const [markdownOpen, setMarkdownOpen] = useState(false);
     const [currentBlogContent, setCurrentBlogContent] = useState('');
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     useEffect(() => {
         axios.get('/api/blogs')
@@ -76,12 +77,24 @@ const NewBlog = () => {
         setOpen(true);
     };
 
-    const handleDelete = (id) => {
-        axios.delete(`/api/blogs/${id}`)
-            .then(() => {
-                setRows(rows.filter((row) => row.id !== id));
-            })
-            .catch((error) => console.error('Error deleting blog post:', error));
+    const handleDeleteClick = (id) => {
+        setDeleteId(id);
+        setConfirmDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteId !== null) {
+            axios.delete(`/api/blogs/${deleteId}`)
+                .then(() => {
+                    setRows(rows.filter((row) => row.id !== deleteId));
+                    setConfirmDeleteOpen(false);
+                })
+                .catch((error) => console.error('Error deleting blog post:', error));
+        }
+    };
+
+    const handleCancelDelete = () => {
+        setConfirmDeleteOpen(false);
     };
 
     const handleRead = (blog) => {
@@ -109,7 +122,7 @@ const NewBlog = () => {
                         <IconButton color="primary" onClick={() => handleEdit(params.row)}>
                             <EditIcon />
                         </IconButton>
-                        <IconButton color="secondary" onClick={() => handleDelete(params.row.id)}>
+                        <IconButton color="secondary" onClick={() => handleDeleteClick(params.row.id)}>
                             <DeleteIcon />
                         </IconButton>
                         <IconButton color="inherit" onClick={() => handleRead(params.row)}>
@@ -189,6 +202,20 @@ const NewBlog = () => {
                 <DialogActions>
                     <Button onClick={handleMarkdownClose} color="primary">
                         Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>
+                <DialogTitle>Confirm Delete</DialogTitle>
+                <DialogContent>
+                    Are you sure you want to delete this blog post?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelDelete} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleConfirmDelete} color="secondary">
+                        Delete
                     </Button>
                 </DialogActions>
             </Dialog>
