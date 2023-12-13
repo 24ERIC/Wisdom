@@ -1,132 +1,84 @@
-import React from 'react';
-import { Card, CardContent, Typography, Grid, Paper } from '@mui/material';
-import DescriptionIcon from '@mui/icons-material/Description'; // Placeholder icon
+import * as React from 'react';
+import { styled, useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
+import CssBaseline from '@mui/material/CssBaseline';
+import MuiAppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import MailIcon from '@mui/icons-material/Mail';
 
-function ToolCard({ title, subtitle, description }) {
-  return (
-    <Card sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      width: 200, // Adjust width and height to fit your design
-      height: 150,
-      margin: 2,
-      borderRadius: '16px',
-      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-    }}>
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <DescriptionIcon color="primary" sx={{ fontSize: 40, marginBottom: 1 }} />
-        <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-          {title}
-        </Typography>
-        <Typography variant="caption" display="block" sx={{ textAlign: 'center' }}>
-          {subtitle}
-        </Typography>
-        <Typography variant="caption" display="block" sx={{ textAlign: 'center', color: 'text.secondary' }}>
-          {description}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-}
+const drawerWidth = 240;
 
-function Category({ name, tools }) {
-  return (
-    <Paper elevation={0} sx={{ padding: 2, marginTop: 4, marginBottom: 4 }}>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', marginLeft: 2 }}>
-        {name}
-      </Typography>
-      <Grid container spacing={2} justifyContent="center">
-        {tools.map((tool, index) => (
-          <Grid item key={index}>
-            <ToolCard title={tool.title} subtitle={tool.subtitle} description={tool.description} />
-          </Grid>
-        ))}
-      </Grid>
-    </Paper>
-  );
-}
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: `-${drawerWidth}px`,
+    ...(open && {
+      transition: theme.transitions.create('margin', {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginLeft: 0,
+    }),
+  }),
+);
 
-function Tools() {
-  const categories = [
-    {
-      name: 'Category 1',
-      tools: [
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        // ... other tools
-      ],
-    },
-    {
-      name: 'Category 1',
-      tools: [
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        // ... other tools
-      ],
-    },
-    {
-      name: 'Category 1',
-      tools: [
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        // ... other tools
-      ],
-    },
-    {
-      name: 'Category 1',
-      tools: [
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        // ... other tools
-      ],
-    },
-    {
-      name: 'Category 1',
-      tools: [
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        { title: 'Tool 1', subtitle: 'Subtitle 1', description: 'Desc 1' },
-        // ... other tools
-      ],
-    },
-    // ... other categories
-  ];
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open }) => ({
+  transition: theme.transitions.create(['margin', 'width'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: `${drawerWidth}px`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+  justifyContent: 'flex-end',
+}));
+
+export default function Tools() {
+  const theme = useTheme();
+  const [open, setOpen] = React.useState(false);
+
+  const handleDrawerOpen = () => {
+    setOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setOpen(false);
+  };
 
   return (
-    <div>
-      <Typography variant="h4" sx={{ margin: 2, textAlign: 'center' }}>
-        Tool Categories
-      </Typography>
-      {categories.map((category, index) => (
-        <Category key={index} name={category.name} tools={category.tools} />
-      ))}
-    </div>
+    <></>
   );
 }
-
-export default Tools;
