@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AdbIcon from '@mui/icons-material/Adb';
+import { Link as RouterLink } from 'react-router-dom';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -22,7 +23,7 @@ const options = [
     'Video',
     'Finance',
     'CyberSecurity',
-    'ML AI Deeplearning',
+    'MLAI',
     'Gym',
     'Food',
 ];
@@ -108,7 +109,9 @@ function Header() {
                         >
                             {options.map((option) => (
                                 <MenuItem key={option} selected={option === 'Pyxis'} onClick={handleClose}>
-                                    {option}
+                                    <Link component={RouterLink} to={`/tools/${option.toLowerCase().replace(/\s+/g, '')}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        {option}
+                                    </Link>
                                 </MenuItem>
                             ))}
                         </Menu>
