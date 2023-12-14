@@ -96,8 +96,8 @@ const Blogs = () => {
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 50 },
-        { field: 'title', headerName: 'Title', width: 200 },
-        { field: 'content', headerName: 'Content', width: 800 },
+        { field: 'title', headerName: 'Title', width: 400 },
+        { field: 'content', headerName: 'Content', width: 400 },
         {
             field: 'actions',
             headerName: 'Actions',
