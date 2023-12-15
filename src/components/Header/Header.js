@@ -15,7 +15,7 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AdbIcon from '@mui/icons-material/Adb';
 import { Link as RouterLink } from 'react-router-dom';
-import CPURAM from './CPURAM';
+import HeaderRight from './HeaderRight';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -28,7 +28,7 @@ const options = [
     'Gym',
     'Food',
 ];
-function Header() {
+export default function Header() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -145,10 +145,9 @@ function Header() {
                             ))}
                         </Menu>
                     </Box>
-                <CPURAM />
+                <HeaderRight />
                 </Toolbar>
             </Container>
         </AppBar>
     );
 }
-export default Header;

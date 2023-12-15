@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Box, Switch } from '@mui/material';
+import { Typography, Box, Switch } from '@mui/material';
 
-export default function CPURAM() {
+export default function HeaderRight() {
   const initialData = { memory: "--", cpu: "--" };
   const [systemInfo, setSystemInfo] = useState(initialData);
   const [fetchingData, setFetchingData] = useState(false);
@@ -12,14 +12,14 @@ export default function CPURAM() {
 
   useEffect(() => {
     let interval;
-    let isSubscribed = true; // Flag to control updates
+    let isSubscribed = true;
 
     const fetchData = async () => {
       try {
         const response = await fetch('/api/tools/audio/system_info');
         if (response.ok) {
           const data = await response.json();
-          if (isSubscribed) { // Update state only if isSubscribed is true
+          if (isSubscribed) {
             setSystemInfo(data);
           }
         } else {
@@ -40,23 +40,23 @@ export default function CPURAM() {
 
     return () => {
       clearInterval(interval);
-      isSubscribed = false; // Prevent updates when component is unmounted or switch is off
+      isSubscribed = false;
     };
   }, [fetchingData]);
 
   return (
     <>
-    <Box sx={{ width: '150px', mr: 1 }}>
-          <Typography variant="body2">CPU: {systemInfo.cpu}%</Typography>
-          <Typography variant="body2">RAM: {systemInfo.memory}%</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Switch
-            checked={fetchingData}
-            onChange={toggleDataFetching}
-            color="primary"
-          />
-        </Box>
-        </>
+      <Box sx={{ width: '150px', mr: 1 }}>
+        <Typography variant="body2">CPU: {systemInfo.cpu}%</Typography>
+        <Typography variant="body2">RAM: {systemInfo.memory}%</Typography>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Switch
+          checked={fetchingData}
+          onChange={toggleDataFetching}
+          color="primary"
+        />
+      </Box>
+    </>
   );
 }
