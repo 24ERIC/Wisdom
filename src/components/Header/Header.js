@@ -15,6 +15,7 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AdbIcon from '@mui/icons-material/Adb';
 import { Link as RouterLink } from 'react-router-dom';
+import CPURAM from './CPURAM';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -144,6 +145,7 @@ function Header() {
                             ))}
                         </Menu>
                     </Box>
+                <CPURAM />
                 </Toolbar>
             </Container>
         </AppBar>

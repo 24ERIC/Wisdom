@@ -132,10 +132,30 @@ def get_all_blogs():
         return jsonify({'error': str(e)}), 500
 
 
+import psutil
+
+@app.route('/api/tools/audio/system_info')
+def system_info():
+    memory = psutil.virtual_memory()
+    cpu = psutil.cpu_percent(interval=1)
+    ram_usage = memory.percent
+    network_speed = "N/A"  # Placeholder, implement based on your requirements
+    temperature = "N/A"  # Placeholder, implement based on your system's capability
+
+    return jsonify({
+        'memory': memory.percent,
+        'cpu': cpu,
+        'ramUsage': ram_usage,
+        'networkSpeed': network_speed,
+        'temperature': temperature
+    })
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-    app.run(debug=True)
+
     
     
     

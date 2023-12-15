@@ -22,4 +22,28 @@
 
 
 
+# Design
+- blog
+    - finance (tool)
+    - ML Ai (make it tool)
+    - website app technology tutorial
+    - 
+    - 
+    - 
+- tools
+    - ！！！CPU GPU running, memory usage
+    - audio
+    - video
+    - mlai deeplearning
+    - finance
+    - cybersecurity
+        - attack
+        - defend
 
+
+# Improvement
+- blog
+    - click header blog, popup menu, [Finance, MLAI, Website, App, Technology]
+    - 
+    - 
+    - 
