@@ -41,6 +41,25 @@
         - defend
 
 
+- blog
+    - search
+        - tags
+    - new blog
+    - future plan
+    - 
+    - 
+- blog
+    - initily
+        - search
+            - type, enter, go to new page show all result
+        - tag tree visualizar (number)
+            - 
+        - list of 10 latest finished blog
+        - development plan
+        - list of unfinished blog
+    - 
+    - 
+    - 
 # Improvement
 - blog
     - click header blog, popup menu, [Finance, MLAI, Website, App, Technology]
