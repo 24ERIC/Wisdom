@@ -25,7 +25,6 @@ sqlite3 blog_database.db
 SELECT * FROM ...
 .exit
 
-
 Posts Table (for blog posts):
 
     post_id (Primary Key)
@@ -34,13 +33,12 @@ Posts Table (for blog posts):
     author_id (Foreign Key referencing Users Table)
     created_at
     updated_at
-    tag_id
+    tag_id (Foreign Key referencing Tags Table)
 
 Tags Table (for categorizing posts):
 
     tag_id (Primary Key)
     tag_name
-    Posts
 
 # Design
 
