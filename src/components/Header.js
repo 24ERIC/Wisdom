@@ -13,7 +13,7 @@ import {
     Link
 } from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
-import CPU from './Header/CPU';
+import HeaderBarCPU from './Header/HeaderBarCPU';
 import HeaderBarSearch from './Header/HeaderBarSearch';
 
 
@@ -95,7 +95,7 @@ export default function Header() {
                         </Menu>
                     </Box>
                     <HeaderBarSearch />
-                    <CPU />
+                    <HeaderBarCPU />
                 </Toolbar>
             </Container>
         </AppBar>
