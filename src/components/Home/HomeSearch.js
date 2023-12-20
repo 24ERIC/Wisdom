@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
+import HomeSearchHistory from './HomeSearchHistory';
 
 const searchBoxStyle = {
   display: 'flex',
@@ -11,7 +12,7 @@ const searchBoxStyle = {
   minWidth: '300px',
   border: '1px solid #dfe1e5',
   borderRadius: '24px',
-  margin: '20px 0',
+  margin: '30px 0',
   transition: 'background-color 0.3s',
 };
 
@@ -28,7 +29,8 @@ const inputStyle = {
   backgroundColor: 'transparent',
 };
 
-function HomeSearch() {
+
+export default function HomeSearch() {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
@@ -46,14 +48,18 @@ function HomeSearch() {
       style={{
         ...searchBoxStyle,
         backgroundColor,
+        width: '100%', 
+        display: 'flex', 
+        justifyContent: 'center'
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <SearchIcon style={iconStyle} />
       <input type="text" style={inputStyle} />
+      <HomeSearchHistory />
     </div>
   );
 }
 
-export default HomeSearch;
+

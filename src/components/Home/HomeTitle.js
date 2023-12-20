@@ -1,3 +1,4 @@
+import { Height } from '@mui/icons-material';
 import React from 'react';
 
 const titleStyles = {
@@ -6,6 +7,8 @@ const titleStyles = {
   userSelect: 'none', // Prevent text selection
   pointerEvents: 'none', // Disable pointer events on the entire title
   cursor: 'default', // Set the cursor to default
+  textAlign: 'center',
+  marginTop: '100px',
 };
 
 const letterStyles = [
@@ -24,7 +27,11 @@ const HomeTitle = () => {
     </span>
   ));
 
-  return <div style={titleStyles}>{titleText}</div>;
+  return (
+    <div style={titleStyles}>
+      {titleText}
+    </div>
+  );
 };
 
 export default HomeTitle;
