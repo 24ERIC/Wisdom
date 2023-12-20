@@ -13,11 +13,11 @@ import {
     Link
 } from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
-import HeaderRight from './HeaderRight';
+import ToolBarRight from './subcomponents/ToolBarRight';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
-export default function Header() {
+export default function BlogHeader() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -34,7 +34,7 @@ export default function Header() {
     };
 
     return (
-        <AppBar position="static">
+        <AppBar position="static" sx={{ background:"black" }}>
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
@@ -59,10 +59,10 @@ export default function Header() {
                     </Link>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
-                            <Link href="/blogs" style={{ color: 'white' }}>Blogs</Link>
+                            <Link href="/blogs" style={{ color: 'white', fontSize: '30px' }}>Blogs</Link>
                         </Button>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
-                            <Link href="/tools" style={{ color: 'white' }}>Tools</Link>
+                            <Link href="/tools" style={{ color: 'white', fontSize: '30px' }}>Tools</Link>
                         </Button>
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
@@ -93,7 +93,7 @@ export default function Header() {
                             ))}
                         </Menu>
                     </Box>
-                <HeaderRight />
+                <ToolBarRight />
                 </Toolbar>
             </Container>
         </AppBar>

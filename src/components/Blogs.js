@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from 'axios';
 import Markdown from 'markdown-to-jsx';
-
+import BlogHeader from './Header/BlogHeader';
 
 const Blogs = () => {
     const [rows, setRows] = useState([]);
@@ -124,6 +124,8 @@ const Blogs = () => {
     ];
 
     return (
+        <>
+        <BlogHeader />
         <div style={{ height: 750, width: '100%' }}>
             <DataGrid
                 rows={rows}
@@ -224,6 +226,7 @@ const Blogs = () => {
                 </DialogActions>
             </Dialog>
         </div>
+        </>
     );
 };
 
