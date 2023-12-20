@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
 import CPU from './Header/CPU';
+import HeaderBarSearch from './Header/HeaderBarSearch';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -34,7 +35,7 @@ export default function Header() {
     };
 
     return (
-        <AppBar position="static">
+        <AppBar position="static" sx={{ background: "black" }}>
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
@@ -93,7 +94,8 @@ export default function Header() {
                             ))}
                         </Menu>
                     </Box>
-                <CPU />
+                    <HeaderBarSearch />
+                    <CPU />
                 </Toolbar>
             </Container>
         </AppBar>

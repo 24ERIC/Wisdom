@@ -14,6 +14,8 @@ import MLAI from './components/Tools/MLAI/MLAI';
 import Gym from './components/Tools/Gym/Gym';
 import Food from './components/Tools/Food/Food';
 
+
+import Test from './components/Test';
 function App() {
   return (
     <Router>
@@ -28,6 +30,7 @@ function App() {
         <Route path="/tools/food" component={Food} />
         <Route path="/tools" component={Tools} />
         <Route path="/blogs" component={Blogs} />
+        <Route path="/t" component={Test} />
         <Route exact path="/" component={Home} />
       </Switch>
     </Router>
