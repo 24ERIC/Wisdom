@@ -13,7 +13,7 @@ import {
     Link
 } from '@mui/material';
 import AdbIcon from '@mui/icons-material/Adb';
-import HeaderRight from './HeaderRight';
+import CPU from './Header/CPU';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -93,7 +93,7 @@ export default function Header() {
                             ))}
                         </Menu>
                     </Box>
-                <HeaderRight />
+                <CPU />
                 </Toolbar>
             </Container>
         </AppBar>

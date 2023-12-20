@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import './App.css';
 
-import Header from './components/Header/Header';
+import Header from './components/Header';
 import Home from './components/Home';
 import Blogs from './components/Blogs';
-import Tools from './components/Tools/Tools';
+import Tools from './components/Tools';
 import Audio from './components/Tools/Audio/Audio';
 import Video from './components/Tools/Video/Video';
 import Finance from './components/Tools/Finance/Finance';
