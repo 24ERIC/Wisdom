@@ -60,10 +60,10 @@ export default function Header() {
                     </Link>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
-                            <Link href="/blogs" style={{ color: 'white', fontSize: '30px' }}>Blogs</Link>
+                            <Link href="/blogs" sx={{ textDecoration: 'none', color: 'rgba(200, 200, 200, 0.8)', fontSize: '30px', '&:hover': { color: 'white' } }}>Blogs</Link>
                         </Button>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
-                            <Link href="/tools" style={{ color: 'white', fontSize: '30px' }}>Tools</Link>
+                            <Link href="/tools" sx={{ textDecoration: 'none', color: 'rgba(200, 200, 200, 0.8)', fontSize: '30px', '&:hover': { color: 'white' } }}>Tools</Link>
                         </Button>
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
