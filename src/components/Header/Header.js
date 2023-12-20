@@ -12,22 +12,11 @@ import {
     MenuItem,
     Link
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AdbIcon from '@mui/icons-material/Adb';
-import { Link as RouterLink } from 'react-router-dom';
 import HeaderRight from './HeaderRight';
 
 
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
-const options = [
-    'Audio',
-    'Video',
-    'Finance',
-    'CyberSecurity',
-    'MLAI',
-    'Gym',
-    'Food',
-];
 export default function Header() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -42,14 +31,6 @@ export default function Header() {
 
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
-    };
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-    const handleClose = () => {
-        setAnchorEl(null);
     };
 
     return (
@@ -77,45 +58,12 @@ export default function Header() {
                         </Typography>
                     </Link>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block' }}>
-                            <Link href="/blogs" style={{ textDecoration: 'none', color: 'white' }}>Blogs</Link>
+                        <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
+                            <Link href="/blogs" style={{ color: 'white' }}>Blogs</Link>
                         </Button>
-                        <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block' }}>
-                            <Link href="/tools" style={{ textDecoration: 'none', color: 'white' }}>Tools</Link>
+                        <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
+                            <Link href="/tools" style={{ color: 'white' }}>Tools</Link>
                         </Button>
-                        <IconButton
-                            aria-label="more"
-                            id="long-button"
-                            aria-controls={open ? 'long-menu' : undefined}
-                            aria-expanded={open ? 'true' : undefined}
-                            aria-haspopup="true"
-                            onClick={handleClick}
-                        >
-                            <MoreVertIcon />
-                        </IconButton>
-                        <Menu
-                            id="long-menu"
-                            MenuListProps={{
-                                'aria-labelledby': 'long-button',
-                            }}
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                            PaperProps={{
-                                style: {
-                                    maxHeight: 48 * 4.5,
-                                    width: '20ch',
-                                },
-                            }}
-                        >
-                            {options.map((option) => (
-                                <MenuItem key={option} selected={option === 'Pyxis'} onClick={handleClose}>
-                                    <Link component={RouterLink} to={`/tools/${option.toLowerCase().replace(/\s+/g, '')}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                        {option}
-                                    </Link>
-                                </MenuItem>
-                            ))}
-                        </Menu>
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
