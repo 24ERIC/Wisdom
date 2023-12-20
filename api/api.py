@@ -1,3 +1,4 @@
+import psutil
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -20,10 +21,6 @@ migrate = Migrate(app, db)
 logging.basicConfig(level=logging.DEBUG)
 
 
-
-
-
-
 # Table of Content
 # 1 - Blog Search
 # 2 - blog
@@ -37,20 +34,22 @@ def rank_results(query, results):
     query_terms = Counter(query.split())
     ranked_results = sorted(
         results,
-        key=lambda x: sum(query_terms[word] for word in x['name'].lower().split() if word in query_terms),
+        key=lambda x: sum(
+            query_terms[word] for word in x['name'].lower().split() if word in query_terms),
         reverse=True
     )
     return ranked_results
+
 
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('query', '').lower()
     tag_query = request.args.get('tag', '').lower().split(',')
-    
+
     # Load the blog index
     with open('blog_index.json', 'r') as index_file:
         blog_index = json.load(index_file)
-    
+
     # Basic search functionality
     results = [
         item for item in blog_index
@@ -59,7 +58,7 @@ def search():
 
     # Rank the results based on the number of query term occurrences
     results = rank_results(query, results)
-    
+
     # Suggest similar tags if no results found
     if not results and query:
         all_tags = {tag for item in blog_index for tag in item['tags']}
@@ -74,13 +73,11 @@ def search():
         else:
             message = "No matches or similar tags found."
         return jsonify({'message': message, 'results': results})
-    
+
     return jsonify(results)
 #########################################################################################################
 #########################################################################################################
 #########################################################################################################
-
-
 
 
 #########################################################################################################
@@ -95,6 +92,7 @@ def db_operation(query, args=(), commit=False):
             return cursor.lastrowid
         else:
             return cursor.fetchall()
+
 
 @app.route('/api/blogs', methods=['POST'])
 def add_blog_post():
@@ -116,6 +114,7 @@ def add_blog_post():
         app.logger.error('Failed to add blog post: %s', e)
         abort(500, description="Internal Server Error")
 
+
 @app.route("/api/blogs/<int:blog_id>", methods=["PUT", "DELETE"])
 def blog_post(blog_id):
     try:
@@ -128,18 +127,21 @@ def blog_post(blog_id):
             return jsonify({"success": True}), 200
 
         elif request.method == "DELETE":
-            db_operation("DELETE FROM blogs WHERE id = ?", (blog_id,), commit=True)
+            db_operation("DELETE FROM blogs WHERE id = ?",
+                         (blog_id,), commit=True)
             return jsonify({"success": True}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
+
 @app.route('/api/blogs', methods=['GET'])
 def get_all_blogs():
     try:
         all_posts = db_operation("SELECT * FROM blogs")
         # Format the results into a list of dicts, or use a model serialization approach
-        posts = [{"id": post[0], "title": post[1], "tags": post[2], "content": post[3]} for post in all_posts]
+        posts = [{"id": post[0], "title": post[1], "tags": post[2],
+                  "content": post[3]} for post in all_posts]
         return jsonify(posts)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -148,11 +150,10 @@ def get_all_blogs():
 #########################################################################################################
 
 
-
 #########################################################################################################
 # 3 - CPU RAM #################################################################################################
 #########################################################################################################
-import psutil
+
 
 @app.route('/api/tools/audio/system_info')
 def system_info():
@@ -174,8 +175,6 @@ def system_info():
 #########################################################################################################
 
 
-
-
 #########################################################################################################
 # 4 - home search result ################################################################################################
 #########################################################################################################
@@ -195,11 +194,85 @@ def search_history():
 #########################################################################################################
 
 
+#########################################################################################################
+# latest 10 blogs and tools ########################################################################################################
+#########################################################################################################
 
+@app.route('/api/latestblogs', methods=['GET'])
+def get_latest_blogs():
+    return jsonify([
+        {"id": 1, "title": "Blog 1"},
+        {"id": 2, "title": "Blog 2"},
+        {"id": 3, "title": "Blog 3"},
+        {"id": 4, "title": "Blog 4"},
+        {"id": 5, "title": "Blog 5"},
+        {"id": 6, "title": "Blog 6"},
+        {"id": 7, "title": "Blog 7"},
+        {"id": 8, "title": "Blog 8"},
+        {"id": 9, "title": "Blog rvebtrnytmu,imunyrbtnytmu,i.,mnrb9"},
+        {"id": 10, "title": "Blog 10"},
+        {"id": 1, "title": "Blog 1"},
+        {"id": 2, "title": "Blog 2"},
+        {"id": 3, "title": "Blog 3"},
+        {"id": 4, "title": "Blog 4"},
+        {"id": 5, "title": "Blog 5"},
+        {"id": 6, "title": "Blog 6"},
+        {"id": 7, "title": "Blog 7"},
+        {"id": 8, "title": "Blog 8"},
+        {"id": 9, "title": "Blog rvebtrnytmu,imunyrbtnytmu,i.,mnrb9"},
+        {"id": 10, "title": "Blog 10"},
+        {"id": 1, "title": "Blog 1"},
+        {"id": 2, "title": "Blog 2"},
+        {"id": 3, "title": "Blog 3"},
+        {"id": 4, "title": "Blog 4"},
+        {"id": 5, "title": "Blog 5"},
+        {"id": 6, "title": "Blog 6"},
+        {"id": 7, "title": "Blog 7"},
+        {"id": 8, "title": "Blog 8"},
+        {"id": 9, "title": "Blog rvebtrnytmu,imunyrbtnytmu,i.,mnrb9"},
+        {"id": 10, "title": "Blog 10"},
+    ])
+
+
+@app.route('/api/latesttools', methods=['GET'])
+def get_latest_tools():
+    return jsonify([
+        {"id": 1, "name": "Toolcevrbetnymu,i.mnbrvewrebtnymu,i7mtnbrev 1"},
+        {"id": 2, "name": "Tool 2"},
+        {"id": 3, "name": "Tool 3"},
+        {"id": 4, "name": "Tool 4"},
+        {"id": 5, "name": "Tool 5"},
+        {"id": 6, "name": "Tool 6"},
+        {"id": 7, "name": "Tool 7"},
+        {"id": 8, "name": "Tool 8"},
+        {"id": 9, "name": "Tool 9"},
+        {"id": 10, "name": "Tool 10"},
+        {"id": 1, "name": "Toolcevrbetnymu,i.mnbrvewrebtnymu,i7mtnbrev 1"},
+        {"id": 2, "name": "Tool 2"},
+        {"id": 3, "name": "Tool 3"},
+        {"id": 4, "name": "Tool 4"},
+        {"id": 5, "name": "Tool 5"},
+        {"id": 6, "name": "Tool 6"},
+        {"id": 7, "name": "Tool 7"},
+        {"id": 8, "name": "Tool 8"},
+        {"id": 9, "name": "Tool 9"},
+        {"id": 10, "name": "Tool 10"},
+        {"id": 1, "name": "Toolcevrbetnymu,i.mnbrvewrebtnymu,i7mtnbrev 1"},
+        {"id": 2, "name": "Tool 2"},
+        {"id": 3, "name": "Tool 3"},
+        {"id": 4, "name": "Tool 4"},
+        {"id": 5, "name": "Tool 5"},
+        {"id": 6, "name": "Tool 6"},
+        {"id": 7, "name": "Tool 7"},
+        {"id": 8, "name": "Tool 8"},
+        {"id": 9, "name": "Tool 9"},
+        {"id": 10, "name": "Tool 10"},
+    ])
+
+
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-    
-    
-    
