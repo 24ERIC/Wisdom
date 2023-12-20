@@ -1,17 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Collapse from '@mui/material/Collapse';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 
 const homeLatestBlogsStyle = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
   height: '100vh',
-  backgroundColor: '#f8f9fa',
   padding: '20px',
   fontSize: '1rem',
   color: '#5f6368',
 };
+
+const latestBlogsTextStyle = {
+  fontWeight: 'bold', // Make text bold
+  color: '#4a4a4a', // Change text color
+  fontSize: '1.2rem', // Increase font size
+};
+
+const listItemButtonStyle = {
+  position: 'absolute',
+  top: '100px',
+  left: 10,
+  zIndex: 1000,
+  padding: '20px',
+  fontSize: '1rem',
+  color: '#5f6368',
+};
+
 
 const listStyle = {
   listStyleType: 'none',
@@ -19,10 +41,12 @@ const listStyle = {
   margin: '0 auto',
   textAlign: 'left',
   width: '100%',
-  maxWidth: '400px',
+  maxWidth: '300px',
   maxHeight: '700px',
   overflowY: 'scroll',
   borderRadius: '10px',
+  top: '70px',
+  left: '-15px',
 };
 
 const listItemStyle = {
@@ -39,6 +63,7 @@ const listItemStyle = {
 
 const HomeLatestBlogs = () => {
   const [blogs, setBlogs] = useState([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     axios.get('/api/latestblogs')
@@ -48,26 +73,25 @@ const HomeLatestBlogs = () => {
       .catch(error => console.error('Error fetching blogs:', error));
   }, []);
 
-  const onHover = (e, isHovering) => {
-    e.currentTarget.style.transform = isHovering ? 'scale(1.05)' : 'scale(1)';
+  const handleClick = () => {
+    setOpen(!open);
   };
 
   return (
     <div style={homeLatestBlogsStyle}>
-      <h2>Latest Blogs</h2>
-      <ol style={listStyle}>
-        {blogs.map((blog, index) => (
-          <li key={blog.id} style={listItemStyle}
-            onMouseEnter={(e) => onHover(e, true)}
-            onMouseLeave={(e) => onHover(e, false)}>
-            <span>#{index + 1}</span>
-            <span>
-              {blog.title.length > 15 ? `${blog.title.substring(0, 15)}...` : blog.title}
-            </span>
-          </li>
-        ))}
-
-      </ol>
+      <ListItemButton style={listItemButtonStyle} onClick={handleClick}>
+        <ListItemText primary="Latest Blogs" primaryTypographyProps={{ style: latestBlogsTextStyle }} />
+        {open ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+      <Collapse in={open} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding style={listStyle}>
+          {blogs.map((blog, index) => (
+            <ListItemButton key={blog.id} style={listItemStyle} sx={{ pl: 4 }}>
+              <ListItemText primary={`${index + 1}. ${blog.title.length > 15 ? `${blog.title.substring(0, 15)}...` : blog.title}`} />
+            </ListItemButton>
+          ))}
+        </List>
+      </Collapse>
     </div>
   );
 };
