@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DataGrid, GridToolbar, GridToolbarContainer } from '@mui/x-data-grid';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -13,6 +13,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from 'axios';
 import Markdown from 'markdown-to-jsx';
 import { useLocation } from 'react-router-dom';
+import _ from 'lodash';
+import AddIcon from '@mui/icons-material/Add';
+import Fab from '@mui/material/Fab';
+
 
 const Search = () => {
     const [rows, setRows] = useState([]);
@@ -36,27 +40,7 @@ const Search = () => {
             })
             .catch(error => console.error('Error fetching blog posts:', error));
     }, []);
-    // useEffect(() => {
-    //     // Update search input based on location state
-    //     const newSearchInput = location.state?.searchInput || '';
-    //     setSearchInput(newSearchInput);
-    
-    //     // Fetch and optionally filter blog posts
-    //     axios.get('/api/blogs')
-    //         .then(response => {
-    //             let data = Array.isArray(response.data) ? response.data : [];
-    //             if (newSearchInput) {
-    //                 // Update your filter logic as needed
-    //                 data = data.filter(blog =>
-    //                     blog.title.toLowerCase().includes(newSearchInput.toLowerCase()) ||
-    //                     blog.content.toLowerCase().includes(newSearchInput.toLowerCase())
-    //                 );
-    //             }
-    //             setRows(data);
-    //         })
-    //         .catch(error => console.error('Error fetching blog posts:', error));
-    // }, [location]);
-    
+
     useEffect(() => {
         if (location.state?.searchInput) {
             console.log(location.state.searchInput);
@@ -66,6 +50,25 @@ const Search = () => {
             setSearchInput('');
         }
     }, [location]);
+
+    const debouncedSearch = useCallback(_.debounce((input) => {
+        setSearchInput(input);
+    }, 300), []);
+
+    const handleSearchInputChange = (event) => {
+        debouncedSearch(event.target.value);
+    };
+
+    const getFilteredRows = () => {
+        if (!searchInput) return rows;
+
+        return rows.filter(row => {
+            return row.title.toLowerCase().includes(searchInput.toLowerCase()) ||
+                row.content.toLowerCase().includes(searchInput.toLowerCase());
+        });
+    };
+
+    const filteredRows = getFilteredRows();
 
     const handleOpen = () => {
         setFormData({ id: null, title: '', tags: '', content: '' });
@@ -156,30 +159,18 @@ const Search = () => {
     ];
 
     return (
-        <div style={{ height: 750, width: '100%' }}>
+        <div style={{ height: 500, width: '100%' }}>
+            <TextField
+                onChange={handleSearchInputChange}
+                placeholder="Search..."
+                style={{ marginBottom: '0px' }}
+            />
             <DataGrid
-                rows={rows}
+                rows={filteredRows}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[5, 10, 20]}
                 disableCheckboxSelection
-                slots={{
-                    toolbar: (props) => (
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <GridToolbar {...props} />
-                            <div style={{ marginLeft: '210px' }}>
-                                <Button color="primary" onClick={handleOpen}>
-                                    New Blog
-                                </Button>
-                            </div>
-                        </div>
-                    ),
-                }}
-                slotProps={{
-                    toolbar: {
-                        showQuickFilter: true,
-                    },
-                }}
                 disableSelectionOnClick
                 disableRowSelectionOnClick
                 density="standard"
@@ -255,6 +246,15 @@ const Search = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Fab color="primary" aria-label="add" style={{
+                position: 'fixed',
+                right: '60px',
+                bottom: '60px',
+                zIndex: 1000,
+            }}
+                onClick={handleOpen}>
+                <AddIcon fontSize="large" />
+            </Fab>
         </div>
     );
 };
