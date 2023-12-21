@@ -2,6 +2,7 @@ import React from 'react';
 import HeaderSection from './Blogs/BlogHeader';
 import StatsSection from './Blogs/BlogStatsSection';
 import BlogCategoryContent from './Blogs/BlogCategoryContent';
+import BlogNewButton from './Blogs/BlogNewButton';
 
 const blogContainerStyle = {
   border: '1px solid black',
@@ -17,6 +18,7 @@ const Blogs = () => {
         <StatsSection />
         <BlogCategoryContent />
       </div>
+      <BlogNewButton />
     </div>
   );
 };
