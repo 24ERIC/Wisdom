@@ -1,50 +1,79 @@
-import BookIcon from '@mui/icons-material/Book';
+import React, { useState, useEffect } from 'react';
 
-import React from 'react';
+const rowStyle = {
+    display: 'flex',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    marginBottom: '20px',
+    marginTop: '20px',
+    marginLeft: '30px',
+    marginRight: '30px',
+};
 
-// Helper Component to render each item
-const CategoryItem = ({ title, count }) => (
-  <div style={{ border: '1px solid #FFFFFF', padding: '10px', marginBottom: '5px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <span>{title}</span>
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <span style={{ marginRight: '5px' }}>{count}</span>
-      <BookIcon />
-    </div>
-  </div>
-);
+const boxStyle = {
+    background: '#000000',
+    padding: '8px 16px',
+    margin: '5px',
+    border: '2px solid #dfe1e5',
+    borderRadius: '9px',
+    width: '17%',
+    boxSizing: 'border-box'
+};
 
-// Main Component
+const tagStyle = {
+    display: 'block',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    cursor: 'pointer',
+};
+
+
 const BlogCategoryContent = () => {
-  // Example data, replace with actual data fetching logic
-  const latestCategories = [
-    { title: 'User Interface', count: 440 },
-    { title: 'Security', count: 343 },
-    // ... other categories
-  ];
+    const [searchHistory, setSearchHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  const tagCategories = [
-    { title: 'Machine Learning', count: 313 },
-    { title: 'Networking', count: 292 },
-    // ... other categories
-  ];
+    useEffect(() => {
+        fetch('/api/tags')
+            .then(response => response.json())
+            .then(data => {
+                setSearchHistory(data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching history:', error);
+                setLoading(false);
+            });
+    }, []);
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', marginTop: '20px' }}>
-      <section style={{ marginBottom: '20px' }}>
-        <h2>Find Projects By Latest</h2>
-        {latestCategories.map((item, index) => (
-          <CategoryItem key={index} title={item.title} count={item.count} />
-        ))}
-      </section>
+    const chunkArray = (array, size) => {
+        const result = [];
+        for (let i = 0; i < array.length; i += size) {
+            result.push(array.slice(i, i + size));
+        }
+        return result;
+    };
+    
+    const boxes = chunkArray(searchHistory, 8);
+    const rows = chunkArray(boxes, 5);
 
-      <section>
-        <h2>Find Blogs By Tags</h2>
-        {tagCategories.map((item, index) => (
-          <CategoryItem key={index} title={item.title} count={item.count} />
-        ))}
-      </section>
-    </div>
-  );
+    return (
+        <>
+            {loading ? <p>Loading...</p> : rows.map((row, rowIndex) => (
+                <div key={rowIndex} style={rowStyle}>
+                    {row.map((box, boxIndex) => (
+                        <div key={boxIndex} style={boxStyle}>
+                            {box.map((tag, tagIndex) => (
+                                <span key={tagIndex} style={tagStyle}>
+                                    {tag.query} 📔
+                                </span>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            ))}
+        </>
+    );
 };
 
 export default BlogCategoryContent;
