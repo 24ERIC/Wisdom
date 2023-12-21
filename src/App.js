@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import './App.css';
-
 import Header from './components/Header';
 import Home from './components/Home';
 import Blogs from './components/Blogs';
@@ -13,9 +12,9 @@ import CyberSecurity from './components/Tools/CyberSecurity/CyberSecurity';
 import MLAI from './components/Tools/MLAI/MLAI';
 import Gym from './components/Tools/Gym/Gym';
 import Food from './components/Tools/Food/Food';
+import Search from './components/Search';
 
 
-import Test from './components/Test';
 function App() {
   return (
     <Router>
@@ -30,7 +29,7 @@ function App() {
         <Route path="/tools/food" component={Food} />
         <Route path="/tools" component={Tools} />
         <Route path="/blogs" component={Blogs} />
-        <Route path="/t" component={Test} />
+        <Route path="/search" component={Search} />
         <Route exact path="/" component={Home} />
       </Switch>
     </Router>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import HomeSearchHistory from './HomeSearchHistory';
+import { useHistory } from 'react-router-dom';
 
 const searchBoxStyle = {
   display: 'flex',
@@ -28,10 +29,10 @@ const inputStyle = {
   flexGrow: 1,
   backgroundColor: 'transparent',
 };
-
-
 export default function HomeSearch() {
+  const [searchInput, setSearchInput] = useState('');
   const [isHovered, setIsHovered] = useState(false);
+  const history = useHistory();
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -39,6 +40,27 @@ export default function HomeSearch() {
 
   const handleMouseLeave = () => {
     setIsHovered(false);
+  };
+
+  const handleInputChange = (e) => {
+    setSearchInput(e.target.value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleSearch = () => {
+    history.push({
+      pathname: '/search',
+      state: { searchInput }
+    });
+  };
+
+  const handleSearchIconClick = () => {
+    handleSearch();
   };
 
   const backgroundColor = isHovered ? '#f0f0f0' : 'white';
@@ -55,11 +77,15 @@ export default function HomeSearch() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <SearchIcon style={iconStyle} />
-      <input type="text" style={inputStyle} />
+      <SearchIcon style={iconStyle} onClick={handleSearchIconClick} />
+      <input
+        type="text"
+        style={inputStyle}
+        onChange={handleInputChange}
+        onKeyPress={handleKeyPress}
+        value={searchInput}
+      />
       <HomeSearchHistory />
     </div>
   );
 }
-
-
