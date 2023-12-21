@@ -2,12 +2,21 @@ import React from 'react';
 import HeaderSection from './Blogs/BlogHeader';
 import StatsSection from './Blogs/BlogStatsSection';
 import BlogCategoryContent from './Blogs/BlogCategoryContent';
+
+const blogContainerStyle = {
+  border: '1px solid black',
+  backgroundColor: 'black',
+  margin: '40px',
+};
+
 const Blogs = () => {
   return (
-    <div>
+    <div style={{ backgroundColor: 'black' }}>
       <HeaderSection />
-      <StatsSection />
-      <BlogCategoryContent />
+      <div style={blogContainerStyle}>
+        <StatsSection />
+        <BlogCategoryContent />
+      </div>
     </div>
   );
 };
