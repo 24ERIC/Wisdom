@@ -29,7 +29,9 @@ const Search = () => {
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const location = useLocation();
-    const [searchInput, setSearchInput] = useState('');
+    const initialSearch = location.state?.searchInput || '';
+    const [searchInput, setSearchInput] = useState(initialSearch);
+    const [immediateSearchInput, setImmediateSearchInput] = useState('');
 
     useEffect(() => {
         axios.get('/api/blogs')
@@ -44,8 +46,8 @@ const Search = () => {
     }, []);
 
     useEffect(() => {
-        const initialSearch = location.state?.searchInput || '';
         setSearchInput(initialSearch);
+        setImmediateSearchInput(initialSearch);
     }, [location]);
 
     const debouncedSearch = useCallback(_.debounce((input) => {
@@ -57,9 +59,10 @@ const Search = () => {
             debouncedSearch.cancel();
         };
     }, [debouncedSearch]);
-
     const handleSearchInputChange = (event) => {
-        debouncedSearch(event.target.value);
+        const inputValue = event.target.value;
+        setImmediateSearchInput(inputValue);
+        debouncedSearch(inputValue);
     };
 
     const getFilteredRows = () => {
@@ -179,9 +182,9 @@ const Search = () => {
     ];
 
     return (
-        <div style={{ height: 1000, width: '100%', backgroundColor: '#000000' }}>
+        <div style={{ height: 5000, width: '100%', backgroundColor: '#000000' }}>
             <TextField
-                value={searchInput}
+                value={immediateSearchInput}
                 onChange={handleSearchInputChange}
                 placeholder="Search blogs..."
                 style={{

@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
@@ -14,25 +10,48 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import HistoryIcon from '@mui/icons-material/History';
+import { useHistory } from 'react-router-dom';
+
 
 export default function HeaderSearchPopup({ open, handleClose }) {
     const [searchHistory, setSearchHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchInput, setSearchInput] = useState('');
+
+    const handleInputChange = (event) => {
+        setSearchInput(event.target.value);
+    };
 
     useEffect(() => {
-        if (open) {
-            fetch('/api/search/history')
-                .then(response => response.json())
-                .then(data => {
-                    setSearchHistory(data);
-                    setLoading(false);
-                })
-                .catch(error => {
-                    console.error('Error fetching history:', error);
-                    setLoading(false);
-                });
-        }
+        fetch('/api/search/history')
+            .then(response => response.json())
+            .then(data => {
+                setSearchHistory(data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching history:', error);
+                setLoading(false);
+            });
     }, [open]);
+
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+    const history = useHistory();
+
+    const handleSearch = () => {
+        history.push({
+            pathname: '/search',
+            state: { searchInput }
+        });
+        handleClose();
+    };
+
+
 
     const style = {
         position: 'absolute',
@@ -75,7 +94,11 @@ export default function HeaderSearchPopup({ open, handleClose }) {
                             </InputAdornment>
                         ),
                     }}
+                    onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
+                    value={searchInput}
                 />
+
                 <Typography variant="subtitle1" sx={{ mt: 2, mb: 2, fontWeight: 'normal' }}>
                     Recent
                 </Typography>
@@ -87,7 +110,7 @@ export default function HeaderSearchPopup({ open, handleClose }) {
                                     <ListItemIcon>
                                         <HistoryIcon />
                                     </ListItemIcon>
-                                    <ListItemText primary={history.query} />
+                                    <ListItemText primary={history.search_query} />
                                 </ListItem>
                                 <hr />
                             </React.Fragment>

@@ -47,7 +47,6 @@ export default function HomeSearchHistory() {
         setLoading(false);
       });
     }, []);
-  console.log(searchHistory);
 
   if (loading) {
     return <div style={historyBoxStyle}>Loading...</div>;
