@@ -47,7 +47,8 @@ export default function HomeSearchHistory() {
         console.error('Error fetching history:', error);
         setLoading(false);
       });
-  }, []);
+    }, []);
+  console.log(searchHistory);
 
   if (loading) {
     return <div style={historyBoxStyle}>Loading...</div>;
@@ -60,8 +61,8 @@ export default function HomeSearchHistory() {
   return (
     <div style={historyBoxStyle}>
       {searchHistory.map((entry, index) => (
-        <div key={index} style={historyEntryStyle} title={entry.query}>
-          {entry.query}
+        <div key={index} style={historyEntryStyle} title={entry.search_query}>
+          {entry.search_query}
         </div>
       ))}
     </div>

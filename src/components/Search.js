@@ -51,6 +51,12 @@ const Search = () => {
     const debouncedSearch = useCallback(_.debounce((input) => {
         setSearchInput(input);
     }, 300), []);
+    
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel();
+        };
+    }, [debouncedSearch]);
 
     const handleSearchInputChange = (event) => {
         debouncedSearch(event.target.value);
@@ -71,23 +77,38 @@ const Search = () => {
         setFormData({ id: null, title: '', tags: '', content: '' });
         setOpen(true);
     };
+
     const handleClose = () => setOpen(false);
 
-    const handleAddOrUpdateBlogPost = () => {
+    const handleAddOrUpdateBlogPost = async () => {
+        if (!formData.title || !formData.content) {
+            alert("Title and content are required.");
+            return;
+        }
         const apiEndpoint = formData.id ? `/api/blogs/${formData.id}` : '/api/blogs';
-        const method = formData.id ? 'put' : 'post';
-        axios[method](apiEndpoint, formData)
-            .then((response) => {
-                if (formData.id) {
-                    setRows(rows.map((row) => (row.id === formData.id ? { ...formData } : row)));
-                } else {
-                    setRows([...rows, { ...formData, id: response.data.id }]);
-                }
-                handleClose();
-            })
-            .catch((error) => console.error('Error adding/updating blog post:', error));
+        try {
+            let response;
+            if (formData.id) {
+                response = await axios.put(apiEndpoint, formData);
+            } else {
+                response = await axios.post(apiEndpoint, formData);
+            }
+            fetchData();
+            handleClose();
+        } catch (error) {
+            console.error('Error adding/updating blog post:', error);
+        }
     };
-
+    
+    const fetchData = async () => {
+        try {
+            const response = await axios.get('/api/blogs');
+            setRows(response.data);
+        } catch (error) {
+            console.error('Error fetching blog posts:', error);
+        }
+    };
+    
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData({ ...formData, [name]: value });
@@ -127,9 +148,11 @@ const Search = () => {
     };
 
     const columns = [
-        { field: 'id', headerName: 'ID', width: 50 },
+        { field: 'post_id', headerName: 'ID', width: 50 },
         { field: 'title', headerName: 'Title', width: 400 },
         { field: 'content', headerName: 'Content', width: 400 },
+        { field: 'tag_name', headerName: 'Tag', width: 300 },
+        { field: 'number_of_views', headerName: 'Views', width: 120 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -151,7 +174,6 @@ const Search = () => {
                 );
             }
         },
-        { field: 'tags', headerName: 'Tags', width: 300 },
 
     ];
 

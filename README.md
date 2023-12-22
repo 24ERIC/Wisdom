@@ -26,30 +26,32 @@ sqlite3 blog_database.db
 SELECT * FROM ...
 .exit
 
-Posts Table (for blog posts):
 
-    post_id (Primary Key)
-    title
-    content
-    tag_id
-    number of views
+CREATE TABLE Posts (
+    post_id INTEGER PRIMARY KEY,
+    title TEXT,
+    content TEXT,
+    number_of_views INTEGER
+);
 
-bloTags Table (for categorizing posts):
+CREATE TABLE Tags (
+    tag_id INTEGER PRIMARY KEY,
+    tag_name TEXT
+);
 
-    tag_id (Primary Key)
-    tag_name
-    post id
+CREATE TABLE PostTags (
+    post_id INTEGER,
+    tag_id INTEGER,
+    PRIMARY KEY (post_id, tag_id),
+    FOREIGN KEY (post_id) REFERENCES Posts(post_id),
+    FOREIGN KEY (tag_id) REFERENCES Tags(tag_id)
+);
 
-
-number of blogtags
-number of blogs
-
-SearchHistory Table:
-
-    search_id (Primary Key)
-    search_query
-    timestamp
-
+CREATE TABLE SearchHistory (
+    search_id INTEGER PRIMARY KEY,
+    search_query TEXT,
+    timestamp DATETIME
+);
 
 # Design
 
@@ -66,4 +68,3 @@ SearchHistory Table:
     - blog add plan
     - tool add plan
 
-    

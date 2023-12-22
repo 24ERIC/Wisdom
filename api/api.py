@@ -12,313 +12,197 @@ import re
 from flask import render_template, abort
 import logging
 import sqlite3
+from sqlalchemy import text
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog_database.db'
 db = SQLAlchemy(app)
+
 migrate = Migrate(app, db)
 logging.basicConfig(level=logging.DEBUG)
 
 
 # Table of Content
-# 1 - Blog Search
-# 2 - blog
-# 3 - CPU RAM
+# 1 - CPU RAM
 
-
-#########################################################################################################
-# 1 - Blog Search ###########################################################################################
-#########################################################################################################
-def rank_results(query, results):
-    query_terms = Counter(query.split())
-    ranked_results = sorted(
-        results,
-        key=lambda x: sum(
-            query_terms[word] for word in x['name'].lower().split() if word in query_terms),
-        reverse=True
-    )
-    return ranked_results
-
-
-@app.route('/api/search', methods=['GET'])
-def search():
-    query = request.args.get('query', '').lower()
-    tag_query = request.args.get('tag', '').lower().split(',')
-
-    # Load the blog index
-    with open('blog_index.json', 'r') as index_file:
-        blog_index = json.load(index_file)
-
-    # Basic search functionality
-    results = [
-        item for item in blog_index
-        if query in item['name'].lower() or any(tag in item['tags'] for tag in tag_query)
-    ]
-
-    # Rank the results based on the number of query term occurrences
-    results = rank_results(query, results)
-
-    # Suggest similar tags if no results found
-    if not results and query:
-        all_tags = {tag for item in blog_index for tag in item['tags']}
-        suggested_tags = get_close_matches(query, all_tags)
-        if suggested_tags:
-            results = [
-                item for item in blog_index
-                if any(suggested_tag in item['tags'] for suggested_tag in suggested_tags)
-            ]
-            message = f"No direct matches found. Showing results for related tags: {', '.join(suggested_tags)}"
-            results = rank_results(query, results)
-        else:
-            message = "No matches or similar tags found."
-        return jsonify({'message': message, 'results': results})
-
-    return jsonify(results)
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
 
 #########################################################################################################
-# 2 - blog ###############################################################################################
+# 1 - CPU RAM #################################################################################################
 #########################################################################################################
-def db_operation(query, args=(), commit=False):
-    with sqlite3.connect('./api/blog_database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        if commit:
-            conn.commit()
-            return cursor.lastrowid
-        else:
-            return cursor.fetchall()
-
-
-@app.route('/api/blogs', methods=['POST'])
-def add_blog_post():
-    try:
-        data = request.get_json()
-        if not all(key in data for key in ['title', 'tags', 'content']):
-            return jsonify({'error': 'Missing title, tags, or content'}), 400
-
-        with sqlite3.connect('./api/blog_database.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
-                           (data['title'], data['tags'], data['content']))
-            conn.commit()
-            return jsonify({"id": cursor.lastrowid}), 201
-    except sqlite3.Error as e:
-        app.logger.error('Database error: %s', e)
-        abort(500, description="Database Error")
-    except Exception as e:
-        app.logger.error('Failed to add blog post: %s', e)
-        abort(500, description="Internal Server Error")
-
-
-@app.route("/api/blogs/<int:blog_id>", methods=["PUT", "DELETE"])
-def blog_post(blog_id):
-    try:
-        if request.method == "PUT":
-            data = request.get_json()
-            if not all(key in data for key in ['title', 'tags', 'content']):
-                return jsonify({'error': 'Missing title, tags, or content'}), 400
-            db_operation("UPDATE blogs SET title = ?, tags = ?, content = ? WHERE id = ?",
-                         (data['title'], data['tags'], data['content'], blog_id), commit=True)
-            return jsonify({"success": True}), 200
-
-        elif request.method == "DELETE":
-            db_operation("DELETE FROM blogs WHERE id = ?",
-                         (blog_id,), commit=True)
-            return jsonify({"success": True}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/blogs', methods=['GET'])
-def get_all_blogs():
-    try:
-        all_posts = db_operation("SELECT * FROM blogs")
-        # Format the results into a list of dicts, or use a model serialization approach
-        posts = [{"id": post[0], "title": post[1], "tags": post[2],
-                  "content": post[3]} for post in all_posts]
-        return jsonify(posts)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-
-
-#########################################################################################################
-# 3 - CPU RAM #################################################################################################
-#########################################################################################################
-
-
 @app.route('/api/tools/audio/system_info')
 def system_info():
     memory = psutil.virtual_memory()
     cpu = psutil.cpu_percent(interval=1)
-    ram_usage = memory.percent
-    network_speed = "N/A"  # Placeholder, implement based on your requirements
-    temperature = "N/A"  # Placeholder, implement based on your system's capability
 
     return jsonify({
         'memory': memory.percent,
-        'cpu': cpu,
-        'ramUsage': ram_usage,
-        'networkSpeed': network_speed,
-        'temperature': temperature
+        'cpu': cpu
     })
 #########################################################################################################
 #########################################################################################################
 #########################################################################################################
 
+@app.route('/api/blogs', methods=['GET'])
+@app.route('/api/blogs/<int:post_id>', methods=['GET'])
+def get_blogs(post_id=None):
+    try:
+        if post_id is None:
+            # Fetch all blog posts
+            query = text("""
+            SELECT p.post_id, p.title, p.content, p.number_of_views, t.tag_name
+            FROM Posts p
+            LEFT JOIN PostTags pt ON p.post_id = pt.post_id
+            LEFT JOIN Tags t ON pt.tag_id = t.tag_id
+            ORDER BY p.number_of_views DESC, p.title ASC
+            """)
+        else:
+            # Fetch a specific blog post by ID
+            query = text("""
+            SELECT p.post_id, p.title, p.content, p.number_of_views, t.tag_name
+            FROM Posts p
+            LEFT JOIN PostTags pt ON p.post_id = pt.post_id
+            LEFT JOIN Tags t ON pt.tag_id = t.tag_id
+            WHERE p.post_id = :post_id
+            """)
+            query = query.bindparams(post_id=post_id)
 
-#########################################################################################################
-# 4 - home search result ################################################################################################
-#########################################################################################################
-
-@app.route('/api/search/history')
-def search_history():
-    # This is fake data; replace with your actual database query logic.
-    fake_history = [
-        {'query': 'Weather tomorrow'},
-        {'query': 'Recipe for lasagna'},
-        {'query': 'How to learn Python'},
-        {'query': 'React tutorial React tutorial React tutorial React tutorial React tutorial React tutorial '},
-    ]
-    return jsonify(fake_history)
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
+        all_posts = db.session.execute(query).fetchall()
+        posts = [{"id": post[0], "title": post[1], "content": post[2], "number_of_views": post[3], "tag": post[4]} for post in all_posts]
+        return jsonify(posts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 
 
-#########################################################################################################
-# 5 - latest 10 blogs and tools ########################################################################################################
-#########################################################################################################
+@app.route('/api/blogs/<int:post_id>', methods=['PUT'])
+def update_blog(post_id):
+    data = request.get_json()
+    try:
+        query = text("""
+        UPDATE Posts SET title = :title, content = :content, number_of_views = :number_of_views
+        WHERE post_id = :post_id
+        """)
+        db.session.execute(
+            query,
+            {
+                "title": data['title'],
+                "content": data['content'],
+                "number_of_views": data['number_of_views'],
+                "post_id": post_id,
+            },
+        )
+        db.session.commit()
+        return jsonify({'message': 'Post updated successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+    
+
+
+@app.route('/api/blogs', methods=['POST'])
+def create_blog():
+    data = request.get_json()
+    try:
+        # Initialize number_of_views to 0 if it's not provided in the JSON data
+        number_of_views = data.get('number_of_views', 0)
+
+        # Use text() to declare the SQL query
+        query = text("INSERT INTO Posts (title, content, number_of_views) VALUES (:title, :content, :number_of_views)")
+        
+        db.session.execute(query, {"title": data['title'], "content": data['content'], "number_of_views": number_of_views})
+        db.session.commit()
+        return jsonify({'message': 'Post created successfully'}), 201
+    except Exception as e:
+        # Log the error message for debugging purposes
+        app.logger.error(f'Error creating blog post: {str(e)}')
+        return jsonify({'error': 'Internal Server Error'}), 500
+
+
+
+@app.route('/api/blogs/<int:post_id>', methods=['DELETE'])
+def delete_blog(post_id):
+    try:
+        query = text("DELETE FROM Posts WHERE post_id = :post_id")
+        db.session.execute(query, {"post_id": post_id})
+        db.session.commit()
+        return jsonify({'message': 'Post deleted successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/api/tags', methods=['GET'])
+def get_tags():
+    try:
+        query = text("SELECT * FROM Tags")
+        tags = db.session.execute(query).fetchall()
+        return jsonify([{'id': tag[0], 'name': tag[1]} for tag in tags])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/numberoftags', methods=['GET'])
+def number_of_tags():
+    try:
+        query = text("SELECT COUNT(*) FROM Tags")
+        count = db.session.execute(query).scalar()
+        return jsonify(count)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/api/search/history', methods=['GET'])
+def get_search_history():
+    try:
+        query = text("SELECT * FROM SearchHistory")
+        history = db.session.execute(query).fetchall()
+        return jsonify([{'search_id': h[0], 'search_query': h[1], 'timestamp': h[2]} for h in history])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    
 @app.route('/api/latestblogs', methods=['GET'])
 def get_latest_blogs():
-    return jsonify([
-        {"id": 1, "title": "Blog 1"},
-        {"id": 2, "title": "Blog 2"},
-        {"id": 3, "title": "Blog 3"},
-        {"id": 4, "title": "Blog 4"},
-        {"id": 5, "title": "Blog 5"},
-        {"id": 6, "title": "Blog 6"},
-        {"id": 7, "title": "Blog 7"},
-        {"id": 8, "title": "Blog 8"},
-        {"id": 9, "title": "Blog rvebtrnytmu,imunyrbtnytmu,i.,mnrb9"},
-        {"id": 10, "title": "Blog 10"},
-        {"id": 1, "title": "Blog 1"},
-        {"id": 2, "title": "Blog 2"},
-        {"id": 3, "title": "Blog 3"},
-        {"id": 4, "title": "Blog 4"},
-        {"id": 5, "title": "Blog 5"},
-        {"id": 6, "title": "Blog 6"},
-        {"id": 7, "title": "Blog 7"},
-        {"id": 8, "title": "Blog 8"},
-        {"id": 9, "title": "Blog rvebtrnytmu,imunyrbtnytmu,i.,mnrb9"},
-        {"id": 10, "title": "Blog 10"},
-        {"id": 1, "title": "Blog 1"},
-        {"id": 2, "title": "Blog 2"},
-        {"id": 3, "title": "Blog 3"},
-        {"id": 4, "title": "Blog 4"},
-        {"id": 5, "title": "Blog 5"},
-        {"id": 6, "title": "Blog 6"},
-        {"id": 7, "title": "Blog 7"},
-        {"id": 8, "title": "Blog 8"},
-        {"id": 9, "title": "Blog rvebtrnytmu,imunyrbtnytmu,i.,mnrb9"},
-        {"id": 10, "title": "Blog 10"},
-    ])
+    try:
+        query = text("""
+            SELECT post_id, title FROM Posts 
+            ORDER BY number_of_views DESC LIMIT 10
+        """)
+        latest_posts = db.session.execute(query).fetchall()
+        posts = [{"id": post[0], "title": post[1]} for post in latest_posts]
+        return jsonify(posts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-
+    
 @app.route('/api/latesttools', methods=['GET'])
 def get_latest_tools():
-    return jsonify([
-        {"id": 1, "name": "Toolcevrbetnymu,i.mnbrvewrebtnymu,i7mtnbrev 1"},
-        {"id": 2, "name": "Tool 2"},
-        {"id": 3, "name": "Tool 3"},
-        {"id": 4, "name": "Tool 4"},
-        {"id": 5, "name": "Tool 5"},
-        {"id": 6, "name": "Tool 6"},
-        {"id": 7, "name": "Tool 7"},
-        {"id": 8, "name": "Tool 8"},
-        {"id": 9, "name": "Tool 9"},
-        {"id": 10, "name": "Tool 10"},
-        {"id": 1, "name": "Toolcevrbetnymu,i.mnbrvewrebtnymu,i7mtnbrev 1"},
-        {"id": 2, "name": "Tool 2"},
-        {"id": 3, "name": "Tool 3"},
-        {"id": 4, "name": "Tool 4"},
-        {"id": 5, "name": "Tool 5"},
-        {"id": 6, "name": "Tool 6"},
-        {"id": 7, "name": "Tool 7"},
-        {"id": 8, "name": "Tool 8"},
-        {"id": 9, "name": "Tool 9"},
-        {"id": 10, "name": "Tool 10"},
-        {"id": 1, "name": "Toolcevrbetnymu,i.mnbrvewrebtnymu,i7mtnbrev 1"},
-        {"id": 2, "name": "Tool 2"},
-        {"id": 3, "name": "Tool 3"},
-        {"id": 4, "name": "Tool 4"},
-        {"id": 5, "name": "Tool 5"},
-        {"id": 6, "name": "Tool 6"},
-        {"id": 7, "name": "Tool 7"},
-        {"id": 8, "name": "Tool 8"},
-        {"id": 9, "name": "Tool 9"},
-        {"id": 10, "name": "Tool 10"},
-    ])
+    try:
+        # Sample data for latest tools (replace with your actual data)
+        sample_tools = [
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+        ]
 
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
+        # Return the sample data as JSON
+        return jsonify(sample_tools)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 
-#########################################################################################################
-# 6 - number of blogs and tools ########################################################################################################
-#########################################################################################################
-
-NUMBER_OF_BLOGS = 10
-NUMBER_OF_TAGS = 5
-
-@app.route('/api/numberofblogs')
-def number_of_blogs():
-    return jsonify(NUMBER_OF_BLOGS)
-
-@app.route('/api/numberoftags')
-def number_of_tags():
-    return jsonify(NUMBER_OF_TAGS)
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
-
-
-
-#########################################################################################################
-# 7 - blog tags ########################################################################################################
-#########################################################################################################
-import random
-def generate_sample_tags(num_tags=300):
-    sample_tags = []
-    for i in range(num_tags):
-        tag = {
-            "query": f"Tag {i + 1}",
-            "count": random.randint(1, 100)  # Random count for each tag
-        }
-        sample_tags.append(tag)
-    return sample_tags
-
-@app.route('/api/tags')
-def tags():
-    tags = generate_sample_tags()  # Generate sample tags
-    return jsonify(tags)
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
