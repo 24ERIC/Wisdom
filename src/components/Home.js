@@ -18,7 +18,7 @@ function Home() {
         <HomeSearchHistory />
       </div>
 
-      <div style={{ width: '35%' }}>
+      <div style={{ width: '40%' }}>
         <HomeLatestTools />
       </div>
     </div>

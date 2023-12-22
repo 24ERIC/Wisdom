@@ -51,7 +51,7 @@ const Search = () => {
     const debouncedSearch = useCallback(_.debounce((input) => {
         setSearchInput(input);
     }, 300), []);
-    
+
     useEffect(() => {
         return () => {
             debouncedSearch.cancel();
@@ -74,13 +74,14 @@ const Search = () => {
     const filteredRows = getFilteredRows();
 
     const handleOpen = () => {
-        setFormData({ id: null, title: '', tags: '', content: '' });
+        setFormData({ id: null, title: '', tag: '', content: '' });
         setOpen(true);
     };
 
     const handleClose = () => setOpen(false);
 
     const handleAddOrUpdateBlogPost = async () => {
+        console.log('FormData before sending:', formData);
         if (!formData.title || !formData.content) {
             alert("Title and content are required.");
             return;
@@ -99,7 +100,7 @@ const Search = () => {
             console.error('Error adding/updating blog post:', error);
         }
     };
-    
+
     const fetchData = async () => {
         try {
             const response = await axios.get('/api/blogs');
@@ -108,7 +109,7 @@ const Search = () => {
             console.error('Error fetching blog posts:', error);
         }
     };
-    
+
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData({ ...formData, [name]: value });
@@ -148,10 +149,10 @@ const Search = () => {
     };
 
     const columns = [
-        { field: 'post_id', headerName: 'ID', width: 50 },
+        { field: 'id', headerName: 'ID', width: 50 },
         { field: 'title', headerName: 'Title', width: 400 },
         { field: 'content', headerName: 'Content', width: 400 },
-        { field: 'tag_name', headerName: 'Tag', width: 300 },
+        { field: 'tag', headerName: 'Tag', width: 300 },
         { field: 'number_of_views', headerName: 'Views', width: 120 },
         {
             field: 'actions',
@@ -208,6 +209,11 @@ const Search = () => {
             />
 
             <DataGrid
+                initialState={{
+                    sorting: {
+                        sortModel: [{ field: 'id', sort: 'desc' }],
+                    },
+                }}
                 rows={filteredRows}
                 slots={{ toolbar: GridToolbar }}
                 columns={columns}
@@ -239,12 +245,12 @@ const Search = () => {
                     />
                     <TextField
                         margin="dense"
-                        name="tags"
-                        label="Tags"
+                        name="tag"
+                        label="Tag"
                         type="text"
                         fullWidth
                         variant="outlined"
-                        value={formData.tags}
+                        value={formData.tag}
                         onChange={handleChange}
                     />
                     <TextField

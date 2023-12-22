@@ -105,17 +105,32 @@ def update_blog(post_id):
 def create_blog():
     data = request.get_json()
     try:
-        # Initialize number_of_views to 0 if it's not provided in the JSON data
         number_of_views = data.get('number_of_views', 0)
+        query = text("INSERT INTO Posts (title, content, number_of_views) VALUES (:title, :content, :number_of_views) RETURNING post_id")
+        result = db.session.execute(query, {"title": data['title'], "content": data['content'], "number_of_views": number_of_views})
+        post_id = result.fetchone()[0]
 
-        # Use text() to declare the SQL query
-        query = text("INSERT INTO Posts (title, content, number_of_views) VALUES (:title, :content, :number_of_views)")
-        
-        db.session.execute(query, {"title": data['title'], "content": data['content'], "number_of_views": number_of_views})
+        # Handle tags
+        if 'tag' in data and data['tag']:
+            # Check if the tag exists
+            tag_query = text("SELECT tag_id FROM Tags WHERE tag_name = :tag_name")
+            tag_result = db.session.execute(tag_query, {"tag_name": data['tag']}).fetchone()
+
+            if tag_result:
+                tag_id = tag_result[0]
+            else:
+                # Insert new tag
+                insert_tag_query = text("INSERT INTO Tags (tag_name) VALUES (:tag_name) RETURNING tag_id")
+                tag_result = db.session.execute(insert_tag_query, {"tag_name": data['tag']})
+                tag_id = tag_result.fetchone()[0]
+
+            # Link post with tag
+            post_tag_query = text("INSERT INTO PostTags (post_id, tag_id) VALUES (:post_id, :tag_id)")
+            db.session.execute(post_tag_query, {"post_id": post_id, "tag_id": tag_id})
+
         db.session.commit()
         return jsonify({'message': 'Post created successfully'}), 201
     except Exception as e:
-        # Log the error message for debugging purposes
         app.logger.error(f'Error creating blog post: {str(e)}')
         return jsonify({'error': 'Internal Server Error'}), 500
 

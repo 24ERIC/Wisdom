@@ -9,13 +9,13 @@ const historyBoxStyle = {
   backgroundColor: 'white',
   borderRadius: '24px',
   boxShadow: '0 1px 6px rgba(32,33,36,0.28)',
-  margin: '0 auto',
-  width: 'calc(100% - 40px)', // Adjusted for padding
-  maxWidth: '600px', // Set a max-width if necessary
+  marginLeft: '90px',
+  width: 'calc(100% - 40px)',
+  maxWidth: '600px',
   position: 'absolute',
   top: '50%',
   zIndex: 1000,
-  overflow: 'hidden' // In case of very long text
+  overflow: 'hidden',
 };
 
 const historyEntryStyle = {
@@ -23,12 +23,12 @@ const historyEntryStyle = {
   padding: '8px 16px',
   margin: '5px',
   border: '2px solid #dfe1e5',
-  borderRadius: '9px', // Circular edges
+  borderRadius: '9px',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  maxWidth: '100%' // Ensure it doesn't exceed the container width
+  maxWidth: '100%',
 };
 
 export default function HomeSearchHistory() {
@@ -36,7 +36,6 @@ export default function HomeSearchHistory() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch the fake history data from the backend
     fetch('/api/search/history')
       .then(response => response.json())
       .then(data => {
