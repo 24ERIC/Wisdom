@@ -31,17 +31,40 @@ Posts Table (for blog posts):
     post_id (Primary Key)
     title
     content
-    author_id (Foreign Key referencing Users Table)
-    created_at
-    updated_at
-    tag_id (Foreign Key referencing Tags Table)
+    tag_id
+    number of views
 
-Tags Table (for categorizing posts):
+bloTags Table (for categorizing posts):
 
     tag_id (Primary Key)
     tag_name
+    post id
+
+
+number of blogtags
+number of blogs
+
+SearchHistory Table:
+
+    search_id (Primary Key)
+    search_query
+    timestamp
+
 
 # Design
+- header
+    - link header search to search page
+    - add button search
 
+- search
+    - datagrid star + sort # of view
 
+- blog
+    - each tag is can be redirect to search
+    - move search bar and list of tags into smaller component file
+    - blog new and edit, left is input, right is view, can insert picture
 
+- plan
+    - website developement plan
+    - blog add plan
+    - tool add plan

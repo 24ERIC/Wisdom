@@ -16,6 +16,8 @@ import { useLocation } from 'react-router-dom';
 import _ from 'lodash';
 import AddIcon from '@mui/icons-material/Add';
 import Fab from '@mui/material/Fab';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
 
 
 const Search = () => {
@@ -42,13 +44,8 @@ const Search = () => {
     }, []);
 
     useEffect(() => {
-        if (location.state?.searchInput) {
-            console.log(location.state.searchInput);
-            setSearchInput(location.state.searchInput);
-        } else {
-            console.log("");
-            setSearchInput('');
-        }
+        const initialSearch = location.state?.searchInput || '';
+        setSearchInput(initialSearch);
     }, [location]);
 
     const debouncedSearch = useCallback(_.debounce((input) => {
@@ -159,14 +156,38 @@ const Search = () => {
     ];
 
     return (
-        <div style={{ height: 500, width: '100%' }}>
+        <div style={{ height: 1000, width: '100%', backgroundColor: '#000000' }}>
             <TextField
+                value={searchInput}
                 onChange={handleSearchInputChange}
-                placeholder="Search..."
-                style={{ marginBottom: '0px' }}
+                placeholder="Search blogs..."
+                style={{
+                    marginBottom: '20px',
+                    marginLeft: '20%',
+                    marginTop: '5px',
+                    width: '60%',
+                    borderRadius: '40px',
+                    backgroundColor: '#fff',
+                    color: '#000',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
+                    padding: '5px 10px',
+                }}
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <SearchIcon style={{ color: '#000' }} />
+                        </InputAdornment>
+                    ),
+                    style: {
+                        borderRadius: '40px',
+                        color: '#000',
+                    },
+                }}
             />
+
             <DataGrid
                 rows={filteredRows}
+                slots={{ toolbar: GridToolbar }}
                 columns={columns}
                 pageSize={10}
                 rowsPerPageOptions={[5, 10, 20]}
@@ -174,6 +195,11 @@ const Search = () => {
                 disableSelectionOnClick
                 disableRowSelectionOnClick
                 density="standard"
+                slotProps={{
+                    toolbar: {
+                        showQuickFilter: true,
+                    },
+                }}
             />
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
                 <DialogTitle>Add New Blog Post</DialogTitle>
