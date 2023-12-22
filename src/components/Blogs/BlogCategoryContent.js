@@ -65,7 +65,7 @@ const BlogCategoryContent = () => {
                         <div key={boxIndex} style={boxStyle}>
                             {box.map((tag, tagIndex) => (
                                 <span key={tagIndex} style={tagStyle}>
-                                    {tag.query} 📔
+                                    {tag.name} 📔
                                 </span>
                             ))}
                         </div>

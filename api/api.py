@@ -156,6 +156,18 @@ def get_tags():
         return jsonify([{'id': tag[0], 'name': tag[1]} for tag in tags])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/numberofblogs', methods=['GET'])
+def get_number_of_blogs():
+    try:
+        query = text("SELECT COUNT(*) FROM Posts")
+        result = db.session.execute(query).fetchone()
+        count = result[0]
+
+        return jsonify({'numberOfBlogs': count})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/numberoftags', methods=['GET'])
 def number_of_tags():

@@ -26,7 +26,7 @@ const StatsSection = () => {
             marginLeft: '40px',
             marginRight: '40px',
         }}>
-        <StatsBox number={blogs} label="Blogs" />
+        <StatsBox number={blogs.numberOfBlogs} label="Blogs" />
         <StatsBox number={tags} label="Tags" />
         <StatsBox number="Dec 9, 2023" label="Start from" />
       </div>
