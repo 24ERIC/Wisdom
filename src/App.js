@@ -13,6 +13,7 @@ import MLAI from './components/Tools/MLAI/MLAI';
 import Gym from './components/Tools/Gym/Gym';
 import Food from './components/Tools/Food/Food';
 import Search from './components/Search';
+import Plan from './components/Plan';
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/tools" component={Tools} />
         <Route path="/blogs" component={Blogs} />
         <Route path="/search" component={Search} />
+        <Route path="/plan" component={Plan} />
         <Route exact path="/" component={Home} />
       </Switch>
     </Router>

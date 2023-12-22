@@ -52,9 +52,6 @@ SearchHistory Table:
 
 
 # Design
-- header
-    - link header search to search page
-    - add button search
 
 - search
     - datagrid star + sort # of view
@@ -68,3 +65,5 @@ SearchHistory Table:
     - website developement plan
     - blog add plan
     - tool add plan
+
+    
