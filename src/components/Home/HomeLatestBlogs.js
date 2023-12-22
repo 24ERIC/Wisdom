@@ -19,9 +19,9 @@ const homeLatestBlogsStyle = {
 };
 
 const latestBlogsTextStyle = {
-  fontWeight: 'bold', // Make text bold
-  color: '#4a4a4a', // Change text color
-  fontSize: '1.2rem', // Increase font size
+  fontWeight: 'bold',
+  color: '#4a4a4a',
+  fontSize: '1.2rem',
 };
 
 const listItemButtonStyle = {
@@ -38,15 +38,15 @@ const listItemButtonStyle = {
 const listStyle = {
   listStyleType: 'none',
   padding: 0,
-  margin: '0 auto',
+  margin: 0,
   textAlign: 'left',
-  width: '100%',
-  maxWidth: '300px',
+  width: '250px',
   maxHeight: '700px',
   overflowY: 'scroll',
   borderRadius: '10px',
-  top: '70px',
-  left: '-15px',
+  position: 'absolute',
+  top: '170px',
+  left: '10px',
 };
 
 const listItemStyle = {

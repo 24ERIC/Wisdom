@@ -8,21 +8,17 @@ import HomeLatestTools from './Home/HomeLatestTools';
 function Home() {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', height: '30vh' }}>
-      <div style={{ width: '20%', height: '10vh'}}>
+      <div style={{ width: '40%', height: '10vh'}}>
         <HomeLatestBlogs />
       </div>
-      <div style={{ width: '10%' }}>
 
-      </div>
       <div style={{ width: '40%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <HomeTitle />
         <HomeSearch />
         <HomeSearchHistory />
       </div>
-      <div style={{ width: '10%' }}>
 
-      </div>
-      <div style={{ width: '20%' }}>
+      <div style={{ width: '35%' }}>
         <HomeLatestTools />
       </div>
     </div>
