@@ -8,7 +8,7 @@ import HomeLatestTools from './Home/HomeLatestTools';
 function Home() {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', height: '30vh' }}>
-      <div style={{ width: '40%', height: '10vh'}}>
+      <div style={{ width: '40%', height: '10vh' }}>
         <HomeLatestBlogs />
       </div>
 
