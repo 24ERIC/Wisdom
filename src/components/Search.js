@@ -18,8 +18,12 @@ import AddIcon from '@mui/icons-material/Add';
 import Fab from '@mui/material/Fab';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
+import { Divider } from '@mui/material';
 
-
+const uploadImage = async (file) => {
+    // Implement image upload logic here
+    // Return the URL of the uploaded image
+};
 
 const Search = () => {
     const [rows, setRows] = useState([]);
@@ -33,6 +37,7 @@ const Search = () => {
     const initialSearch = location.state?.searchInput || '';
     const [searchInput, setSearchInput] = useState(initialSearch);
     const [immediateSearchInput, setImmediateSearchInput] = useState('');
+    const [markdownText, setMarkdownText] = useState('');
 
     useEffect(() => {
         axios.get('/api/blogs')
@@ -77,9 +82,16 @@ const Search = () => {
 
     const filteredRows = getFilteredRows();
 
-    const handleOpen = () => {
-        setFormData({ id: null, title: '', tag: '', content: '' });
+    const handleOpen = (blog) => {
+        setFormData(blog || { id: null, title: '', tag: '', content: '' });
+        setMarkdownText(blog ? blog.content : '');
         setOpen(true);
+    };
+
+    const handleMarkdownChange = (event) => {
+        const newContent = event.target.value;
+        setMarkdownText(newContent);
+        setFormData({ ...formData, content: event.target.value });
     };
 
     const handleClose = () => setOpen(false);
@@ -120,6 +132,7 @@ const Search = () => {
     };
     const handleEdit = (blog) => {
         setFormData(blog);
+        setMarkdownText(blog.content);
         setOpen(true);
     };
 
@@ -233,42 +246,50 @@ const Search = () => {
                     },
                 }}
             />
-            <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-                <DialogTitle>Add New Blog Post</DialogTitle>
+            <Dialog open={open} onClose={handleClose} fullScreen={true} fullWidth={true} maxWidth="lg">
+                <DialogTitle>{formData.id ? 'Edit Blog Post' : 'Add New Blog Post'}</DialogTitle>
                 <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        name="title"
-                        label="Title"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={formData.title}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="tag"
-                        label="Tag"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={formData.tag}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="content"
-                        label="Content"
-                        type="text"
-                        fullWidth
-                        multiline
-                        rows={15}
-                        variant="outlined"
-                        value={formData.content}
-                        onChange={handleChange}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <div style={{ flex: 1, padding: '10px' }}>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                name="title"
+                                label="Title"
+                                type="text"
+                                fullWidth
+                                variant="outlined"
+                                value={formData.title}
+                                onChange={handleChange}
+                            />
+                            <TextField
+                                margin="dense"
+                                name="tag"
+                                label="Tag"
+                                type="text"
+                                fullWidth
+                                variant="outlined"
+                                value={formData.tag}
+                                onChange={handleChange}
+                            />
+                            <TextField
+                                margin="dense"
+                                name="content"
+                                label="Content"
+                                type="text"
+                                fullWidth
+                                multiline
+                                rows={15}
+                                variant="outlined"
+                                value={markdownText}
+                                onChange={handleMarkdownChange}
+                            />
+                        </div>
+                        <Divider orientation="vertical" flexItem />
+                        <div style={{ flex: 1, padding: '10px', overflowY: 'auto', transform: 'scale(0.8)', transformOrigin: 'top left' }}>
+                            <Markdown>{markdownText}</Markdown>
+                        </div>
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
