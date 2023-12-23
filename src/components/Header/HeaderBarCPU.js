@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Box, Switch } from '@mui/material';
 
-export default function HeaderRight() {
+export default function HeaderBarCPU() {
   const initialData = { memory: "--", cpu: "--" };
   const [systemInfo, setSystemInfo] = useState(initialData);
   const [fetchingData, setFetchingData] = useState(false);

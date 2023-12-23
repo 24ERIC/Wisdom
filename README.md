@@ -6,6 +6,7 @@ npm install react-treebeard
 npm install @mui/x-data-grid
 npm install react-markdown
 npm install react-pro-sidebar
+npm install lodash
 
 
 ### backend
@@ -26,23 +27,20 @@ SELECT * FROM ...
 .exit
 
 
-Posts Table (for blog posts):
+CREATE TABLE Posts (
+    post_id INTEGER PRIMARY KEY,
+    title TEXT,
+    content TEXT,
+    number_of_views INTEGER,
+    tag TEXT,
+);
 
-    post_id (Primary Key)
-    title
-    content
-    author_id (Foreign Key referencing Users Table)
-    created_at
-    updated_at
-    tag_id
+CREATE TABLE SearchHistory (
+    search_id INTEGER PRIMARY KEY,
+    search_query TEXT,
+    timestamp DATETIME
+);
 
-Tags Table (for categorizing posts):
-
-    tag_id (Primary Key)
-    tag_name
-    Posts
-
-# Design
-
-
-
+INSERT INTO SearchHistory (search_query, timestamp) VALUES
+('react', '2021-01-01 10:00:00'),
+('website', '2021-01-02 11:00:00');

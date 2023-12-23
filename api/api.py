@@ -1,161 +1,194 @@
+import psutil
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-import json
-from difflib import get_close_matches
-from collections import Counter
-import os
-import json
-import re
+import logging
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog_database.db'
 db = SQLAlchemy(app)
+
+
 migrate = Migrate(app, db)
-
-
-from flask import render_template, abort
-import logging
-import sqlite3
-
-
-
 logging.basicConfig(level=logging.DEBUG)
 
-
-#########################################################################################################
-# Blog Search ###########################################################################################
-#########################################################################################################
-def rank_results(query, results):
-    query_terms = Counter(query.split())
-    ranked_results = sorted(
-        results,
-        key=lambda x: sum(query_terms[word] for word in x['name'].lower().split() if word in query_terms),
-        reverse=True
-    )
-    return ranked_results
-
-@app.route('/api/search', methods=['GET'])
-def search():
-    query = request.args.get('query', '').lower()
-    tag_query = request.args.get('tag', '').lower().split(',')
-    
-    # Load the blog index
-    with open('blog_index.json', 'r') as index_file:
-        blog_index = json.load(index_file)
-    
-    # Basic search functionality
-    results = [
-        item for item in blog_index
-        if query in item['name'].lower() or any(tag in item['tags'] for tag in tag_query)
-    ]
-
-    # Rank the results based on the number of query term occurrences
-    results = rank_results(query, results)
-    
-    # Suggest similar tags if no results found
-    if not results and query:
-        all_tags = {tag for item in blog_index for tag in item['tags']}
-        suggested_tags = get_close_matches(query, all_tags)
-        if suggested_tags:
-            results = [
-                item for item in blog_index
-                if any(suggested_tag in item['tags'] for suggested_tag in suggested_tags)
-            ]
-            message = f"No direct matches found. Showing results for related tags: {', '.join(suggested_tags)}"
-            results = rank_results(query, results)
-        else:
-            message = "No matches or similar tags found."
-        return jsonify({'message': message, 'results': results})
-    
-    return jsonify(results)
-#########################################################################################################
-
-def db_operation(query, args=(), commit=False):
-    with sqlite3.connect('./api/blog_database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute(query, args)
-        if commit:
-            conn.commit()
-            return cursor.lastrowid
-        else:
-            return cursor.fetchall()
-
-@app.route('/api/blogs', methods=['POST'])
-def add_blog_post():
-    try:
-        data = request.get_json()
-        if not all(key in data for key in ['title', 'tags', 'content']):
-            return jsonify({'error': 'Missing title, tags, or content'}), 400
-
-        with sqlite3.connect('./api/blog_database.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO blogs (title, tags, content) VALUES (?, ?, ?)",
-                           (data['title'], data['tags'], data['content']))
-            conn.commit()
-            return jsonify({"id": cursor.lastrowid}), 201
-    except sqlite3.Error as e:
-        app.logger.error('Database error: %s', e)
-        abort(500, description="Database Error")
-    except Exception as e:
-        app.logger.error('Failed to add blog post: %s', e)
-        abort(500, description="Internal Server Error")
-
-@app.route("/api/blogs/<int:blog_id>", methods=["PUT", "DELETE"])
-def blog_post(blog_id):
-    try:
-        if request.method == "PUT":
-            data = request.get_json()
-            if not all(key in data for key in ['title', 'tags', 'content']):
-                return jsonify({'error': 'Missing title, tags, or content'}), 400
-            db_operation("UPDATE blogs SET title = ?, tags = ?, content = ? WHERE id = ?",
-                         (data['title'], data['tags'], data['content'], blog_id), commit=True)
-            return jsonify({"success": True}), 200
-
-        elif request.method == "DELETE":
-            db_operation("DELETE FROM blogs WHERE id = ?", (blog_id,), commit=True)
-            return jsonify({"success": True}), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-@app.route('/api/blogs', methods=['GET'])
-def get_all_blogs():
-    try:
-        all_posts = db_operation("SELECT * FROM blogs")
-        # Format the results into a list of dicts, or use a model serialization approach
-        posts = [{"id": post[0], "title": post[1], "tags": post[2], "content": post[3]} for post in all_posts]
-        return jsonify(posts)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-import psutil
 
 @app.route('/api/tools/audio/system_info')
 def system_info():
     memory = psutil.virtual_memory()
     cpu = psutil.cpu_percent(interval=1)
-    ram_usage = memory.percent
-    network_speed = "N/A"  # Placeholder, implement based on your requirements
-    temperature = "N/A"  # Placeholder, implement based on your system's capability
-
     return jsonify({
         'memory': memory.percent,
-        'cpu': cpu,
-        'ramUsage': ram_usage,
-        'networkSpeed': network_speed,
-        'temperature': temperature
+        'cpu': cpu
     })
 
 
+@app.route('/api/blogs', methods=['GET'])
+def get_blogs():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 100, type=int)
+    offset = (page - 1) * per_page
+    try:
+        query = text("""
+        SELECT post_id, title, content, number_of_views, tag
+        FROM Posts
+        ORDER BY number_of_views DESC, title ASC
+        LIMIT :per_page OFFSET :offset
+        """)
+        posts = db.session.execute(query, {'per_page': per_page, 'offset': offset}).fetchall()
+        posts_list = []
+        for post in posts:
+            post_dict = {
+                'post_id': post.post_id,
+                'title': post.title,
+                'content': post.content,
+                'number_of_views': post.number_of_views,
+                'tag': post.tag
+            }
+            posts_list.append(post_dict)
+        return jsonify(posts_list)
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/blogs/<int:post_id>', methods=['GET'])
+def get_blog(post_id):
+    try:
+        query = text("""
+        SELECT post_id, title, content, number_of_views, tag
+        FROM Posts
+        WHERE post_id = :post_id
+        """)
+        post = db.session.execute(query, {'post_id': post_id}).fetchone()
+        return jsonify(dict(post)) if post else jsonify({'error': 'Post not found'}), 404 if post is None else 200
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500
+    
+    
+@app.route('/api/blogs', methods=['POST'])
+def create_blog():
+    data = request.get_json()
+    try:
+        query = text("INSERT INTO Posts (title, content, number_of_views, tag) VALUES (:title, :content, 0, :tag) RETURNING post_id")
+        post_id = db.session.execute(query, {"title": data['title'], "content": data['content'], "tag": data.get('tag', '')}).fetchone()[0]
+        db.session.commit()
+        return jsonify({'message': 'Post created successfully', 'post_id': post_id}), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+    
+@app.route('/api/blogs/<int:post_id>', methods=['PUT'])
+def update_blog(post_id):
+    data = request.get_json()
+    try:
+        query = text("UPDATE Posts SET title = :title, content = :content, tag = :tag WHERE post_id = :post_id")
+        db.session.execute(query, {"title": data['title'], "content": data['content'], "tag": data.get('tag', ''), "post_id": post_id})
+        db.session.commit()
+        return jsonify({'message': 'Post updated successfully'}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
+    
+@app.route('/api/blogs/<int:post_id>', methods=['DELETE'])
+def delete_blog(post_id):
+    try:
+        db.session.execute(text("DELETE FROM Posts WHERE post_id = :post_id"), {"post_id": post_id})
+        db.session.commit()
+        return jsonify({'message': 'Post deleted successfully'}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/numberofblogs', methods=['GET'])
+def get_number_of_blogs():
+    try:
+        query = text("SELECT COUNT(*) FROM Posts")
+        result = db.session.execute(query).fetchone()
+        count = result[0]
+
+        return jsonify({'numberOfBlogs': count})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/numberoftags', methods=['GET'])
+def number_of_tags():
+    try:
+        query = text("SELECT COUNT(*) FROM Tags")
+        count = db.session.execute(query).scalar()
+        return jsonify(count)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/search/history', methods=['GET'])
+def get_search_history():
+    try:
+        query = text("SELECT * FROM SearchHistory")
+        history = db.session.execute(query).fetchall()
+        return jsonify([{'search_id': h[0], 'search_query': h[1], 'timestamp': h[2]} for h in history])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/api/latestblogs', methods=['GET'])
+def get_latest_blogs():
+    try:
+        query = text("""
+            SELECT post_id, title FROM Posts 
+            ORDER BY number_of_views DESC LIMIT 10
+        """)
+        latest_posts = db.session.execute(query).fetchall()
+        posts = [{"id": post[0], "title": post[1]} for post in latest_posts]
+        return jsonify(posts)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/latesttools', methods=['GET'])
+def get_latest_tools():
+    try:
+        sample_tools = [
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+            {"id": 1, "name": "Tool 1"},
+            {"id": 2, "name": "Tool 2"},
+            {"id": 3, "name": "Tool 3"},
+        ]
+
+        return jsonify(sample_tools)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/api/blogs/<int:post_id>/increment-views', methods=['POST'])
+def increment_views(post_id):
+    try:
+        query = text("""
+        UPDATE Posts SET number_of_views = number_of_views + 1 WHERE post_id = :post_id
+        """)
+        db.session.execute(query, {"post_id": post_id})
+        db.session.commit()
+        return jsonify({'message': 'View count incremented successfully'}), 200
+    except Exception as e:
+        app.logger.error(f'Error incrementing view count: {str(e)}')
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-    
-    
-    
