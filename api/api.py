@@ -75,11 +75,14 @@ def get_blogs(post_id=None):
         return jsonify({'error': str(e)}), 500
     
 
-
 @app.route('/api/blogs/<int:post_id>', methods=['PUT'])
 def update_blog(post_id):
     data = request.get_json()
+    print("Received data for update:", data)  # Debug: Log received data
+
     try:
+        # Update post details
+        print(f"Updating post with ID {post_id}")  # Debug: Log the post update operation
         query = text("""
         UPDATE Posts SET title = :title, content = :content, number_of_views = :number_of_views
         WHERE post_id = :post_id
@@ -93,10 +96,42 @@ def update_blog(post_id):
                 "post_id": post_id,
             },
         )
+        print("Post updated successfully")  # Debug: Confirmation of post update
+
+        # Update tag
+        if 'tag' in data and data['tag']:
+            print(f"Updating tag for post ID {post_id}")  # Debug: Log the tag update operation
+            # Check if the tag exists
+            tag_query = text("SELECT tag_id FROM Tags WHERE tag_name = :tag_name")
+            tag_result = db.session.execute(tag_query, {"tag_name": data['tag']}).fetchone()
+
+            if tag_result:
+                tag_id = tag_result[0]
+                print(f"Tag {data['tag']} exists with ID {tag_id}")  # Debug: Existing tag
+            else:
+                # Insert new tag
+                insert_tag_query = text("INSERT INTO Tags (tag_name) VALUES (:tag_name) RETURNING tag_id")
+                tag_result = db.session.execute(insert_tag_query, {"tag_name": data['tag']})
+                tag_id = tag_result.fetchone()[0]
+                print(f"Inserted new tag {data['tag']} with ID {tag_id}")  # Debug: New tag inserted
+
+            # Update PostTags link
+            # First, delete any existing tag links for this post
+            delete_post_tag_query = text("DELETE FROM PostTags WHERE post_id = :post_id")
+            db.session.execute(delete_post_tag_query, {"post_id": post_id})
+
+            # Then, insert the new tag link
+            insert_post_tag_query = text("INSERT INTO PostTags (post_id, tag_id) VALUES (:post_id, :tag_id)")
+            db.session.execute(insert_post_tag_query, {"post_id": post_id, "tag_id": tag_id})
+            print("PostTags updated successfully")  # Debug: Confirmation of PostTags update
+
         db.session.commit()
         return jsonify({'message': 'Post updated successfully'}), 200
     except Exception as e:
+        app.logger.error(f'Error occurred: {str(e)}')
         return jsonify({'error': str(e)}), 500
+
+
 
     
 
@@ -104,6 +139,7 @@ def update_blog(post_id):
 @app.route('/api/blogs', methods=['POST'])
 def create_blog():
     data = request.get_json()
+    print(data)
     try:
         number_of_views = data.get('number_of_views', 0)
         query = text("INSERT INTO Posts (title, content, number_of_views) VALUES (:title, :content, :number_of_views) RETURNING post_id")
@@ -207,7 +243,6 @@ def get_latest_blogs():
 @app.route('/api/latesttools', methods=['GET'])
 def get_latest_tools():
     try:
-        # Sample data for latest tools (replace with your actual data)
         sample_tools = [
             {"id": 1, "name": "Tool 1"},
             {"id": 2, "name": "Tool 2"},
@@ -223,7 +258,6 @@ def get_latest_tools():
             {"id": 3, "name": "Tool 3"},
         ]
 
-        # Return the sample data as JSON
         return jsonify(sample_tools)
     except Exception as e:
         return jsonify({'error': str(e)}), 500

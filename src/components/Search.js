@@ -26,7 +26,7 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 const Search = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, title: '', tags: '', content: '' });
+    const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '', number_of_views: 0 });
     const [markdownOpen, setMarkdownOpen] = useState(false);
     const [currentBlogContent, setCurrentBlogContent] = useState('');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -83,14 +83,14 @@ const Search = () => {
     const handleReadFullScreen = (blog) => {
         setFullScreenContent(blog.content);
         setFullScreenOpen(true);
-    
+
         axios.post(`/api/blogs/${blog.id}/increment-views`)
             .then(response => {
                 console.log('View count incremented');
             })
             .catch(error => console.error('Error incrementing view count:', error));
     };
-    
+
 
     const handleFullScreenClose = () => {
         setFullScreenOpen(false);
@@ -113,16 +113,23 @@ const Search = () => {
     const filteredRows = getFilteredRows();
 
     const handleOpen = () => {
-        setFormData({ id: null, title: '', tags: '', content: '' });
+        setFormData({ id: null, title: '', tag: '', content: '' });
         setMarkdownText('');
         setOpen(true);
     };
 
     const handleEdit = (blog) => {
-        setFormData({ id: blog.id, title: blog.title, tags: blog.tags, content: blog.content });
+        setFormData({ 
+            id: blog.id, 
+            title: blog.title, 
+            tag: blog.tag, 
+            content: blog.content,
+            number_of_views: blog.number_of_views 
+        });
         setMarkdownText(blog.content);
         setOpen(true);
     };
+    
 
     const handleMarkdownChange = (event) => {
         const newContent = event.target.value;
@@ -164,8 +171,13 @@ const Search = () => {
 
     const handleChange = (event) => {
         const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
+        if (name === "number_of_views") {
+            setFormData({ ...formData, [name]: parseInt(value, 10) || 0 });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
+
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
@@ -315,6 +327,17 @@ const Search = () => {
                                 value={markdownText}
                                 onChange={handleMarkdownChange}
                             />
+                            <TextField
+                                margin="dense"
+                                name="number_of_views"
+                                label="Number of Views"
+                                type="number"
+                                fullWidth
+                                variant="outlined"
+                                value={formData.number_of_views}
+                                onChange={handleChange}
+                            />
+
                         </div>
                         <Divider orientation="vertical" flexItem />
                         <div style={{
