@@ -10,70 +10,46 @@ const rowStyle = {
     marginRight: '30px',
 };
 
-const boxStyle = {
+const tagStyle = {
     background: '#000000',
+    color: '#fff',
     padding: '8px 16px',
     margin: '5px',
     border: '2px solid #dfe1e5',
     borderRadius: '9px',
-    width: '17%',
-    boxSizing: 'border-box'
-};
-
-const tagStyle = {
-    display: 'block',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     cursor: 'pointer',
 };
 
-
-const BlogCategoryContent = () => {
-    const [searchHistory, setSearchHistory] = useState([]);
+const BlogTagsDisplay = () => {
+    const [tags, setTags] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/tags')
+        fetch('/api/blogs')
             .then(response => response.json())
             .then(data => {
-                setSearchHistory(data);
+                const extractedTags = data.map(blog => blog.tag);
+                setTags(extractedTags);
                 setLoading(false);
             })
             .catch(error => {
-                console.error('Error fetching history:', error);
+                console.error('Error fetching blogs:', error);
                 setLoading(false);
             });
     }, []);
 
-    const chunkArray = (array, size) => {
-        const result = [];
-        for (let i = 0; i < array.length; i += size) {
-            result.push(array.slice(i, i + size));
-        }
-        return result;
-    };
-    
-    const boxes = chunkArray(searchHistory, 8);
-    const rows = chunkArray(boxes, 5);
-
     return (
-        <>
-            {loading ? <p>Loading...</p> : rows.map((row, rowIndex) => (
-                <div key={rowIndex} style={rowStyle}>
-                    {row.map((box, boxIndex) => (
-                        <div key={boxIndex} style={boxStyle}>
-                            {box.map((tag, tagIndex) => (
-                                <span key={tagIndex} style={tagStyle}>
-                                    {tag.name} 📔
-                                </span>
-                            ))}
-                        </div>
-                    ))}
+        <div style={rowStyle}>
+            {loading ? <p>Loading...</p> : tags.map((tag, index) => (
+                <div key={index} style={tagStyle}>
+                    {tag}
                 </div>
             ))}
-        </>
+        </div>
     );
 };
 
-export default BlogCategoryContent;
+export default BlogTagsDisplay;
