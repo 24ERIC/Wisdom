@@ -86,9 +86,17 @@ const Search = () => {
 
     const filteredRows = getFilteredRows();
 
-    const handleOpen = (blog) => {
-        setFormData(blog || { id: null, title: '', tag: '', content: '' });
-        setMarkdownText(blog ? blog.content : '');
+    const handleOpen = () => {
+        // Reset the formData to initial state for adding a new blog
+        setFormData({ id: null, title: '', tags: '', content: '' });
+        setMarkdownText('');
+        setOpen(true);
+    };
+
+    const handleEdit = (blog) => {
+        // Set the formData to the blog's data for editing
+        setFormData({ id: blog.id, title: blog.title, tags: blog.tags, content: blog.content });
+        setMarkdownText(blog.content);
         setOpen(true);
     };
 
@@ -133,11 +141,6 @@ const Search = () => {
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData({ ...formData, [name]: value });
-    };
-    const handleEdit = (blog) => {
-        setFormData(blog);
-        setMarkdownText(blog.content);
-        setOpen(true);
     };
 
     const handleDeleteClick = (id) => {
@@ -349,8 +352,7 @@ const Search = () => {
                 right: '60px',
                 bottom: '60px',
                 zIndex: 1000,
-            }}
-                onClick={handleOpen}>
+            }} onClick={handleOpen}>
                 <AddIcon fontSize="large" />
             </Fab>
         </div>
