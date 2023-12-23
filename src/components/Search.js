@@ -19,6 +19,8 @@ import Fab from '@mui/material/Fab';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import { Divider } from '@mui/material';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 
 const uploadImage = async (file) => {
     // Implement image upload logic here
@@ -38,6 +40,8 @@ const Search = () => {
     const [searchInput, setSearchInput] = useState(initialSearch);
     const [immediateSearchInput, setImmediateSearchInput] = useState('');
     const [markdownText, setMarkdownText] = useState('');
+    const [zoomLevel, setZoomLevel] = useState(0.7); // Default zoom level is 1
+
 
     useEffect(() => {
         axios.get('/api/blogs')
@@ -249,7 +253,7 @@ const Search = () => {
             <Dialog open={open} onClose={handleClose} fullScreen={true} fullWidth={true} maxWidth="lg">
                 <DialogTitle>{formData.id ? 'Edit Blog Post' : 'Add New Blog Post'}</DialogTitle>
                 <DialogContent>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                         <div style={{ flex: 1, padding: '10px' }}>
                             <TextField
                                 autoFocus
@@ -286,12 +290,26 @@ const Search = () => {
                             />
                         </div>
                         <Divider orientation="vertical" flexItem />
-                        <div style={{ flex: 1, padding: '10px', overflowY: 'auto', transform: 'scale(0.8)', transformOrigin: 'top left' }}>
-                            <Markdown>{markdownText}</Markdown>
+                        <div style={{
+                            width: '50%',
+                            padding: '10px',
+                            overflowY: 'auto',
+                        }}>
+                            <div style={{
+                                transform: `scale(${zoomLevel})`,
+                                transformOrigin: 'top left',
+                            }}>
+                                <Markdown>{markdownText}</Markdown>
+                            </div>
                         </div>
                     </div>
                 </DialogContent>
                 <DialogActions>
+
+                    <Button onClick={() => setZoomLevel(zoomLevel * 1.1)} color="primary"> <ZoomInIcon /> </Button>
+                    <Button onClick={() => setZoomLevel(Math.max(zoomLevel / 1.1, 0.3))} color="primary"> <ZoomOutIcon /> </Button>
+                    <Button onClick={() => setZoomLevel(0.7)} color="primary"> Reset </Button>
+
                     <Button onClick={handleClose} color="primary">
                         Cancel
                     </Button>
@@ -306,6 +324,7 @@ const Search = () => {
                     <Markdown>{currentBlogContent}</Markdown>
                 </DialogContent>
                 <DialogActions>
+
                     <Button onClick={handleMarkdownClose} color="primary">
                         Close
                     </Button>
