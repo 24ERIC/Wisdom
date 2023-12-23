@@ -22,10 +22,6 @@ import { Divider } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 
-const uploadImage = async (file) => {
-    // Implement image upload logic here
-    // Return the URL of the uploaded image
-};
 
 const Search = () => {
     const [rows, setRows] = useState([]);
@@ -40,8 +36,23 @@ const Search = () => {
     const [searchInput, setSearchInput] = useState(initialSearch);
     const [immediateSearchInput, setImmediateSearchInput] = useState('');
     const [markdownText, setMarkdownText] = useState('');
-    const [zoomLevel, setZoomLevel] = useState(0.7); // Default zoom level is 1
+    const [zoomLevel, setZoomLevel] = useState(0.7);
 
+    const [fullScreenOpen, setFullScreenOpen] = useState(false);
+    const [fullScreenContent, setFullScreenContent] = useState('');
+    const [fullScreenZoomLevel, setFullScreenZoomLevel] = useState(0.7);
+
+    const zoomInFullScreen = () => {
+        setFullScreenZoomLevel(fullScreenZoomLevel * 1.1);
+    };
+
+    const zoomOutFullScreen = () => {
+        setFullScreenZoomLevel(Math.max(fullScreenZoomLevel / 1.1, 0.3));
+    };
+
+    const resetZoomFullScreen = () => {
+        setFullScreenZoomLevel(1);
+    };
 
     useEffect(() => {
         axios.get('/api/blogs')
@@ -69,6 +80,15 @@ const Search = () => {
             debouncedSearch.cancel();
         };
     }, [debouncedSearch]);
+
+    const handleReadFullScreen = (blog) => {
+        setFullScreenContent(blog.content);
+        setFullScreenOpen(true);
+    };
+
+    const handleFullScreenClose = () => {
+        setFullScreenOpen(false);
+    };
     const handleSearchInputChange = (event) => {
         const inputValue = event.target.value;
         setImmediateSearchInput(inputValue);
@@ -87,14 +107,12 @@ const Search = () => {
     const filteredRows = getFilteredRows();
 
     const handleOpen = () => {
-        // Reset the formData to initial state for adding a new blog
         setFormData({ id: null, title: '', tags: '', content: '' });
         setMarkdownText('');
         setOpen(true);
     };
 
     const handleEdit = (blog) => {
-        // Set the formData to the blog's data for editing
         setFormData({ id: blog.id, title: blog.title, tags: blog.tags, content: blog.content });
         setMarkdownText(blog.content);
         setOpen(true);
@@ -192,7 +210,7 @@ const Search = () => {
                         <IconButton color="secondary" onClick={() => handleDeleteClick(params.row.id)}>
                             <DeleteIcon />
                         </IconButton>
-                        <IconButton color="inherit" onClick={() => handleRead(params.row)}>
+                        <IconButton color="inherit" onClick={() => handleReadFullScreen(params.row)}>
                             <VisibilityIcon />
                         </IconButton>
                     </>
@@ -355,6 +373,22 @@ const Search = () => {
             }} onClick={handleOpen}>
                 <AddIcon fontSize="large" />
             </Fab>
+            <Dialog open={fullScreenOpen} onClose={handleFullScreenClose} fullScreen>
+                <DialogTitle>Blog Content</DialogTitle>
+                <DialogContent>
+                    <div style={{ transform: `scale(${fullScreenZoomLevel})`, transformOrigin: 'top left' }}>
+                        <Markdown>{fullScreenContent}</Markdown>
+                    </div>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={zoomInFullScreen} color="primary"> <ZoomInIcon /> </Button>
+                    <Button onClick={zoomOutFullScreen} color="primary"> <ZoomOutIcon /> </Button>
+                    <Button onClick={resetZoomFullScreen} color="primary"> Reset </Button>
+                    <Button onClick={handleFullScreenClose} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };
