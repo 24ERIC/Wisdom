@@ -14,6 +14,8 @@ import logging
 import sqlite3
 from sqlalchemy import text
 
+from sqlalchemy.exc import SQLAlchemyError
+
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog_database.db'
@@ -43,156 +45,87 @@ def system_info():
 #########################################################################################################
 #########################################################################################################
 #########################################################################################################
-
 @app.route('/api/blogs', methods=['GET'])
-@app.route('/api/blogs/<int:post_id>', methods=['GET'])
-def get_blogs(post_id=None):
+def get_blogs():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 100, type=int)
+    offset = (page - 1) * per_page
     try:
-        if post_id is None:
-            # Fetch all blog posts
-            query = text("""
-            SELECT p.post_id, p.title, p.content, p.number_of_views, t.tag_name
-            FROM Posts p
-            LEFT JOIN PostTags pt ON p.post_id = pt.post_id
-            LEFT JOIN Tags t ON pt.tag_id = t.tag_id
-            ORDER BY p.number_of_views DESC, p.title ASC
-            """)
-        else:
-            # Fetch a specific blog post by ID
-            query = text("""
-            SELECT p.post_id, p.title, p.content, p.number_of_views, t.tag_name
-            FROM Posts p
-            LEFT JOIN PostTags pt ON p.post_id = pt.post_id
-            LEFT JOIN Tags t ON pt.tag_id = t.tag_id
-            WHERE p.post_id = :post_id
-            """)
-            query = query.bindparams(post_id=post_id)
-
-        all_posts = db.session.execute(query).fetchall()
-        posts = [{"id": post[0], "title": post[1], "content": post[2], "number_of_views": post[3], "tag": post[4]} for post in all_posts]
-        return jsonify(posts)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
-
-@app.route('/api/blogs/<int:post_id>', methods=['PUT'])
-def update_blog(post_id):
-    data = request.get_json()
-    print("Received data for update:", data)  # Debug: Log received data
-
-    try:
-        # Update post details
-        print(f"Updating post with ID {post_id}")  # Debug: Log the post update operation
         query = text("""
-        UPDATE Posts SET title = :title, content = :content, number_of_views = :number_of_views
+        SELECT post_id, title, content, number_of_views, tag
+        FROM Posts
+        ORDER BY number_of_views DESC, title ASC
+        LIMIT :per_page OFFSET :offset
+        """)
+        posts = db.session.execute(query, {'per_page': per_page, 'offset': offset}).fetchall()
+        
+        # Convert each post record to a dictionary
+        posts_list = []
+        for post in posts:
+            post_dict = {
+                'post_id': post.post_id,
+                'title': post.title,
+                'content': post.content,
+                'number_of_views': post.number_of_views,
+                'tag': post.tag
+            }
+            posts_list.append(post_dict)
+
+        return jsonify(posts_list)
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/api/blogs/<int:post_id>', methods=['GET'])
+def get_blog(post_id):
+    try:
+        query = text("""
+        SELECT post_id, title, content, number_of_views, tag
+        FROM Posts
         WHERE post_id = :post_id
         """)
-        db.session.execute(
-            query,
-            {
-                "title": data['title'],
-                "content": data['content'],
-                "number_of_views": data['number_of_views'],
-                "post_id": post_id,
-            },
-        )
-        print("Post updated successfully")  # Debug: Confirmation of post update
-
-        # Update tag
-        if 'tag' in data and data['tag']:
-            print(f"Updating tag for post ID {post_id}")  # Debug: Log the tag update operation
-            # Check if the tag exists
-            tag_query = text("SELECT tag_id FROM Tags WHERE tag_name = :tag_name")
-            tag_result = db.session.execute(tag_query, {"tag_name": data['tag']}).fetchone()
-
-            if tag_result:
-                tag_id = tag_result[0]
-                print(f"Tag {data['tag']} exists with ID {tag_id}")  # Debug: Existing tag
-            else:
-                # Insert new tag
-                insert_tag_query = text("INSERT INTO Tags (tag_name) VALUES (:tag_name) RETURNING tag_id")
-                tag_result = db.session.execute(insert_tag_query, {"tag_name": data['tag']})
-                tag_id = tag_result.fetchone()[0]
-                print(f"Inserted new tag {data['tag']} with ID {tag_id}")  # Debug: New tag inserted
-
-            # Update PostTags link
-            # First, delete any existing tag links for this post
-            delete_post_tag_query = text("DELETE FROM PostTags WHERE post_id = :post_id")
-            db.session.execute(delete_post_tag_query, {"post_id": post_id})
-
-            # Then, insert the new tag link
-            insert_post_tag_query = text("INSERT INTO PostTags (post_id, tag_id) VALUES (:post_id, :tag_id)")
-            db.session.execute(insert_post_tag_query, {"post_id": post_id, "tag_id": tag_id})
-            print("PostTags updated successfully")  # Debug: Confirmation of PostTags update
-
-        db.session.commit()
-        return jsonify({'message': 'Post updated successfully'}), 200
-    except Exception as e:
-        app.logger.error(f'Error occurred: {str(e)}')
+        post = db.session.execute(query, {'post_id': post_id}).fetchone()
+        return jsonify(dict(post)) if post else jsonify({'error': 'Post not found'}), 404 if post is None else 200
+    except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 500
-
-
-
-    
-
-
 @app.route('/api/blogs', methods=['POST'])
 def create_blog():
     data = request.get_json()
-    print(data)
     try:
-        number_of_views = data.get('number_of_views', 0)
-        query = text("INSERT INTO Posts (title, content, number_of_views) VALUES (:title, :content, :number_of_views) RETURNING post_id")
-        result = db.session.execute(query, {"title": data['title'], "content": data['content'], "number_of_views": number_of_views})
-        post_id = result.fetchone()[0]
-
-        # Handle tags
-        if 'tag' in data and data['tag']:
-            # Check if the tag exists
-            tag_query = text("SELECT tag_id FROM Tags WHERE tag_name = :tag_name")
-            tag_result = db.session.execute(tag_query, {"tag_name": data['tag']}).fetchone()
-
-            if tag_result:
-                tag_id = tag_result[0]
-            else:
-                # Insert new tag
-                insert_tag_query = text("INSERT INTO Tags (tag_name) VALUES (:tag_name) RETURNING tag_id")
-                tag_result = db.session.execute(insert_tag_query, {"tag_name": data['tag']})
-                tag_id = tag_result.fetchone()[0]
-
-            # Link post with tag
-            post_tag_query = text("INSERT INTO PostTags (post_id, tag_id) VALUES (:post_id, :tag_id)")
-            db.session.execute(post_tag_query, {"post_id": post_id, "tag_id": tag_id})
-
+        query = text("INSERT INTO Posts (title, content, number_of_views, tag) VALUES (:title, :content, 0, :tag) RETURNING post_id")
+        post_id = db.session.execute(query, {"title": data['title'], "content": data['content'], "tag": data.get('tag', '')}).fetchone()[0]
         db.session.commit()
-        return jsonify({'message': 'Post created successfully'}), 201
-    except Exception as e:
-        app.logger.error(f'Error creating blog post: {str(e)}')
-        return jsonify({'error': 'Internal Server Error'}), 500
-
-
-
+        return jsonify({'message': 'Post created successfully', 'post_id': post_id}), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+@app.route('/api/blogs/<int:post_id>', methods=['PUT'])
+def update_blog(post_id):
+    data = request.get_json()
+    try:
+        query = text("UPDATE Posts SET title = :title, content = :content, tag = :tag WHERE post_id = :post_id")
+        db.session.execute(query, {"title": data['title'], "content": data['content'], "tag": data.get('tag', ''), "post_id": post_id})
+        db.session.commit()
+        return jsonify({'message': 'Post updated successfully'}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 @app.route('/api/blogs/<int:post_id>', methods=['DELETE'])
 def delete_blog(post_id):
     try:
-        query = text("DELETE FROM Posts WHERE post_id = :post_id")
-        db.session.execute(query, {"post_id": post_id})
+        db.session.execute(text("DELETE FROM Posts WHERE post_id = :post_id"), {"post_id": post_id})
         db.session.commit()
         return jsonify({'message': 'Post deleted successfully'}), 200
-    except Exception as e:
+    except SQLAlchemyError as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 
+#########################################################################################################
+#########################################################################################################
+#########################################################################################################
 
-@app.route('/api/tags', methods=['GET'])
-def get_tags():
-    try:
-        query = text("SELECT * FROM Tags")
-        tags = db.session.execute(query).fetchall()
-        return jsonify([{'id': tag[0], 'name': tag[1]} for tag in tags])
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
 @app.route('/api/numberofblogs', methods=['GET'])
 def get_number_of_blogs():
     try:

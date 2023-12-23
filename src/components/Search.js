@@ -26,7 +26,7 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 const Search = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '', number_of_views: 0 });
+    const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '' });
     const [markdownOpen, setMarkdownOpen] = useState(false);
     const [currentBlogContent, setCurrentBlogContent] = useState('');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -58,13 +58,19 @@ const Search = () => {
         axios.get('/api/blogs')
             .then(response => {
                 if (Array.isArray(response.data)) {
-                    setRows(response.data);
+                    const updatedRows = response.data.map(post => ({
+                        ...post,
+                        id: post.post_id // Adding id property
+                    }));
+                    setRows(updatedRows);
                 } else {
                     console.error('Expected an array of blog posts, but received:', response.data);
                 }
             })
             .catch(error => console.error('Error fetching blog posts:', error));
     }, []);
+    
+    
 
     useEffect(() => {
         setSearchInput(initialSearch);
@@ -119,17 +125,17 @@ const Search = () => {
     };
 
     const handleEdit = (blog) => {
-        setFormData({ 
-            id: blog.id, 
-            title: blog.title, 
-            tag: blog.tag, 
-            content: blog.content,
-            number_of_views: blog.number_of_views 
+        setFormData({
+            id: blog.id,
+            title: blog.title,
+            tag: blog.tag,
+            content: blog.content
         });
         setMarkdownText(blog.content);
         setOpen(true);
     };
-    
+
+
 
     const handleMarkdownChange = (event) => {
         const newContent = event.target.value;
@@ -140,18 +146,22 @@ const Search = () => {
     const handleClose = () => setOpen(false);
 
     const handleAddOrUpdateBlogPost = async () => {
-        console.log('FormData before sending:', formData);
         if (!formData.title || !formData.content) {
             alert("Title and content are required.");
             return;
         }
+        const blogData = {
+            title: formData.title,
+            tag: formData.tag,
+            content: formData.content
+        };
+
         const apiEndpoint = formData.id ? `/api/blogs/${formData.id}` : '/api/blogs';
         try {
-            let response;
             if (formData.id) {
-                response = await axios.put(apiEndpoint, formData);
+                await axios.put(apiEndpoint, blogData);
             } else {
-                response = await axios.post(apiEndpoint, formData);
+                await axios.post(apiEndpoint, blogData);
             }
             fetchData();
             handleClose();
@@ -278,6 +288,7 @@ const Search = () => {
                 slots={{ toolbar: GridToolbar }}
                 columns={columns}
                 pageSize={10}
+                getRowId={(row) => row.post_id}
                 rowsPerPageOptions={[5, 10, 20]}
                 disableCheckboxSelection
                 disableSelectionOnClick
@@ -327,17 +338,6 @@ const Search = () => {
                                 value={markdownText}
                                 onChange={handleMarkdownChange}
                             />
-                            <TextField
-                                margin="dense"
-                                name="number_of_views"
-                                label="Number of Views"
-                                type="number"
-                                fullWidth
-                                variant="outlined"
-                                value={formData.number_of_views}
-                                onChange={handleChange}
-                            />
-
                         </div>
                         <Divider orientation="vertical" flexItem />
                         <div style={{

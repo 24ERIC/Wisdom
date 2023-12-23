@@ -31,20 +31,8 @@ CREATE TABLE Posts (
     post_id INTEGER PRIMARY KEY,
     title TEXT,
     content TEXT,
-    number_of_views INTEGER
-);
-
-CREATE TABLE Tags (
-    tag_id INTEGER PRIMARY KEY,
-    tag_name TEXT
-);
-
-CREATE TABLE PostTags (
-    post_id INTEGER,
-    tag_id INTEGER,
-    PRIMARY KEY (post_id, tag_id),
-    FOREIGN KEY (post_id) REFERENCES Posts(post_id),
-    FOREIGN KEY (tag_id) REFERENCES Tags(tag_id)
+    number_of_views INTEGER,
+    tag TEXT,
 );
 
 CREATE TABLE SearchHistory (
@@ -52,19 +40,38 @@ CREATE TABLE SearchHistory (
     search_query TEXT,
     timestamp DATETIME
 );
-
-# Design
-
-- search
-    - datagrid star + sort # of view
-
-- blog
-    - each tag is can be redirect to search
-    - move search bar and list of tags into smaller component file
-    - blog new and edit, left is input, right is view, can insert picture
-
-- plan
-    - website developement plan
-    - blog add plan
-    - tool add plan
-
+- get all
+    - Frontend
+        - nothing
+    - Bakcend
+        - 
+        - 
+        - 
+- get single
+    - Frontend
+        - post_id
+    - Bakcend
+        - 
+        - 
+        - 
+- post
+    - Frontend
+        - 
+    - Bakcend
+        - 
+        - 
+        - 
+- put
+    - Frontend
+        - 
+    - Bakcend
+        - 
+        - 
+        - 
+- delete
+    - Frontend
+        - post_id
+    - Bakcend
+        - 
+        - 
+        - 
