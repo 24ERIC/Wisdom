@@ -3,48 +3,31 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-import json
-from difflib import get_close_matches
-from collections import Counter
-import os
-import json
-import re
-from flask import render_template, abort
 import logging
-import sqlite3
 from sqlalchemy import text
-
 from sqlalchemy.exc import SQLAlchemyError
+
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog_database.db'
 db = SQLAlchemy(app)
 
+
 migrate = Migrate(app, db)
 logging.basicConfig(level=logging.DEBUG)
 
 
-# Table of Content
-# 1 - CPU RAM
-
-
-
-#########################################################################################################
-# 1 - CPU RAM #################################################################################################
-#########################################################################################################
 @app.route('/api/tools/audio/system_info')
 def system_info():
     memory = psutil.virtual_memory()
     cpu = psutil.cpu_percent(interval=1)
-
     return jsonify({
         'memory': memory.percent,
         'cpu': cpu
     })
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
+
+
 @app.route('/api/blogs', methods=['GET'])
 def get_blogs():
     page = request.args.get('page', 1, type=int)
@@ -58,8 +41,6 @@ def get_blogs():
         LIMIT :per_page OFFSET :offset
         """)
         posts = db.session.execute(query, {'per_page': per_page, 'offset': offset}).fetchall()
-        
-        # Convert each post record to a dictionary
         posts_list = []
         for post in posts:
             post_dict = {
@@ -70,11 +51,9 @@ def get_blogs():
                 'tag': post.tag
             }
             posts_list.append(post_dict)
-
         return jsonify(posts_list)
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 500
-
 
 
 @app.route('/api/blogs/<int:post_id>', methods=['GET'])
@@ -89,6 +68,8 @@ def get_blog(post_id):
         return jsonify(dict(post)) if post else jsonify({'error': 'Post not found'}), 404 if post is None else 200
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 500
+    
+    
 @app.route('/api/blogs', methods=['POST'])
 def create_blog():
     data = request.get_json()
@@ -100,6 +81,8 @@ def create_blog():
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+    
+    
 @app.route('/api/blogs/<int:post_id>', methods=['PUT'])
 def update_blog(post_id):
     data = request.get_json()
@@ -111,6 +94,8 @@ def update_blog(post_id):
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+    
+    
 @app.route('/api/blogs/<int:post_id>', methods=['DELETE'])
 def delete_blog(post_id):
     try:
@@ -121,10 +106,6 @@ def delete_blog(post_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-
-#########################################################################################################
-#########################################################################################################
-#########################################################################################################
 
 @app.route('/api/numberofblogs', methods=['GET'])
 def get_number_of_blogs():
@@ -148,7 +129,6 @@ def number_of_tags():
         return jsonify({'error': str(e)}), 500
 
 
-
 @app.route('/api/search/history', methods=['GET'])
 def get_search_history():
     try:
@@ -158,7 +138,7 @@ def get_search_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-    
+
 @app.route('/api/latestblogs', methods=['GET'])
 def get_latest_blogs():
     try:
@@ -172,7 +152,7 @@ def get_latest_blogs():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-    
+
 @app.route('/api/latesttools', methods=['GET'])
 def get_latest_tools():
     try:
@@ -194,6 +174,7 @@ def get_latest_tools():
         return jsonify(sample_tools)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
 
 @app.route('/api/blogs/<int:post_id>/increment-views', methods=['POST'])
 def increment_views(post_id):
@@ -207,7 +188,6 @@ def increment_views(post_id):
     except Exception as e:
         app.logger.error(f'Error incrementing view count: {str(e)}')
         return jsonify({'error': 'Internal Server Error'}), 500
-
 
 
 if __name__ == '__main__':

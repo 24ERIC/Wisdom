@@ -40,38 +40,7 @@ CREATE TABLE SearchHistory (
     search_query TEXT,
     timestamp DATETIME
 );
-- get all
-    - Frontend
-        - nothing
-    - Bakcend
-        - 
-        - 
-        - 
-- get single
-    - Frontend
-        - post_id
-    - Bakcend
-        - 
-        - 
-        - 
-- post
-    - Frontend
-        - 
-    - Bakcend
-        - 
-        - 
-        - 
-- put
-    - Frontend
-        - 
-    - Bakcend
-        - 
-        - 
-        - 
-- delete
-    - Frontend
-        - post_id
-    - Bakcend
-        - 
-        - 
-        - 
+
+INSERT INTO SearchHistory (search_query, timestamp) VALUES
+('react', '2021-01-01 10:00:00'),
+('website', '2021-01-02 11:00:00');
