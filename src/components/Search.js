@@ -80,11 +80,17 @@ const Search = () => {
             debouncedSearch.cancel();
         };
     }, [debouncedSearch]);
-
     const handleReadFullScreen = (blog) => {
         setFullScreenContent(blog.content);
         setFullScreenOpen(true);
+    
+        axios.post(`/api/blogs/${blog.id}/increment-views`)
+            .then(response => {
+                console.log('View count incremented');
+            })
+            .catch(error => console.error('Error incrementing view count:', error));
     };
+    
 
     const handleFullScreenClose = () => {
         setFullScreenOpen(false);

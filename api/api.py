@@ -228,6 +228,18 @@ def get_latest_tools():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/blogs/<int:post_id>/increment-views', methods=['POST'])
+def increment_views(post_id):
+    try:
+        query = text("""
+        UPDATE Posts SET number_of_views = number_of_views + 1 WHERE post_id = :post_id
+        """)
+        db.session.execute(query, {"post_id": post_id})
+        db.session.commit()
+        return jsonify({'message': 'View count incremented successfully'}), 200
+    except Exception as e:
+        app.logger.error(f'Error incrementing view count: {str(e)}')
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 
 
