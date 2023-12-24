@@ -27,7 +27,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
         const formData = new FormData();
         formData.append('file', newFile);
 
-        axios.post('/api/imageupload', formData, {
+        axios.post(`/api/imageupload/${currentPostId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -65,7 +65,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
         return imagePreviews.map((preview, index) => {
             const extension = preview.name.substring(preview.name.lastIndexOf('.'));
             const newFileName = `${index + 1}${extension}`;
-            return `![](/public/blog_image/${currentPostId}/${newFileName})`;
+            return `![](/blog_image/${currentPostId}/${newFileName})`;
         }).join('\n');
     };
     

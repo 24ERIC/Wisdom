@@ -213,12 +213,14 @@ def increment_views(post_id):
 
 
 
-# Directory where uploaded files will be saved
-UPLOAD_FOLDER = '../public/blog_image/1'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+@app.route('/api/imageupload/<int:currentPostId>', methods=['POST'])
+def upload_file(currentPostId):
+    UPLOAD_FOLDER = f'../public/blog_image/{currentPostId}'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route('/api/imageupload', methods=['POST'])
-def upload_file():
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
     if 'file' not in request.files:
         return jsonify({'message': 'No file part'}), 400
 
@@ -230,7 +232,6 @@ def upload_file():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return jsonify({'message': 'File uploaded successfully'}), 200
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
