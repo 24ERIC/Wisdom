@@ -6,6 +6,8 @@ from flask_migrate import Migrate
 import logging
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.utils import secure_filename
+import os
 
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
@@ -188,6 +190,27 @@ def increment_views(post_id):
     except Exception as e:
         app.logger.error(f'Error incrementing view count: {str(e)}')
         return jsonify({'error': 'Internal Server Error'}), 500
+
+
+
+
+# Directory where uploaded files will be saved
+UPLOAD_FOLDER = '../public/blog_image/1'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/api/imageupload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'message': 'No file part'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
+
+    if file:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return jsonify({'message': 'File uploaded successfully'}), 200
 
 
 if __name__ == '__main__':

@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Paper, Typography, IconButton, CircularProgress } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import React from 'react';
+import axios from 'axios';
 
-function DragDropFileUpload({ onFileUpload }) {
+function DragDropFileUpload({ onFileUpload, blogId }) {
     const [dragOver, setDragOver] = useState(false);
     const [loading, setLoading] = useState(false);
     const [imagePreviews, setImagePreviews] = useState([]);
@@ -15,6 +15,29 @@ function DragDropFileUpload({ onFileUpload }) {
     }, []);
     const removeImagePreview = (indexToRemove) => {
         setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
+    };
+
+
+    const handleFileChange = (file) => {
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        axios.post('/api/imageupload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }).then(response => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLoading(false);
+                setImagePreviews(prev => [...prev, { url: reader.result, name: file.name }]);
+            };
+            reader.readAsDataURL(file);
+        }).catch(error => {
+            console.error("Error uploading file:", error);
+            setLoading(false);
+        });
     };
 
 
@@ -35,16 +58,29 @@ function DragDropFileUpload({ onFileUpload }) {
         []
     );
 
-    const handleFileChange = (file) => {
-        setLoading(true);
-        onFileUpload(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setLoading(false);
-            setImagePreviews(prev => [...prev, reader.result]);
-        };
-        reader.readAsDataURL(file);
+    // const handleFileChange = (file) => {
+    //     setLoading(true);
+    //     const imageName = file.name; 
+
+    //     onFileUpload(file).then(() => {
+    //         const reader = new FileReader();
+    //         reader.onloadend = () => {
+    //             setLoading(false);
+    //             setImagePreviews(prev => [...prev, { url: reader.result, name: imageName }]);
+    //         };
+    //         reader.readAsDataURL(file);
+    //     });
+    // };
+    const generateMarkdownText = () => {
+        return imagePreviews.map(preview => 
+            `![](/blog_image/${blogId}/${preview.name})`).join('\n');
     };
+    useEffect(() => {
+        if (imagePreviews.length > 0) {
+            const markdownText = generateMarkdownText();
+            navigator.clipboard.writeText(markdownText);
+        }
+    }, [imagePreviews]);
 
     const handleChange = useCallback(
         (event) => {

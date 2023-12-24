@@ -326,7 +326,7 @@ const Search = () => {
                                 value={formData.tag}
                                 onChange={handleChange}
                             />
-                            <DragDropFileUpload onFileUpload={(file) => console.log('File uploaded:', file)} />
+                            <DragDropFileUpload onFileUpload={(file) => console.log('File uploaded:', file, "Post ID", formData.id)} />
                             <TextField
                                 margin="dense"
                                 name="content"
