@@ -419,14 +419,6 @@ const Search = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-            {/* <Fab color="primary" aria-label="add" style={{
-                position: 'fixed',
-                right: '60px',
-                bottom: '60px',
-                zIndex: 1000,
-            }} onClick={handleOpen}>
-                <AddIcon fontSize="large" />
-            </Fab> */}
             <Fab color="primary" aria-label="add" style={{
                 position: 'fixed',
                 right: '60px',

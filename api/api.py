@@ -8,6 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
 import os
+import shutil
 
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
@@ -79,11 +80,20 @@ def create_blog():
         query = text("INSERT INTO Posts (title, content, number_of_views, tag) VALUES (:title, :content, 0, :tag) RETURNING post_id")
         post_id = db.session.execute(query, {"title": data['title'], "content": data['content'], "tag": data.get('tag', '')}).fetchone()[0]
         db.session.commit()
+        create_folder(post_id)
         return jsonify({'message': 'Post created successfully', 'post_id': post_id}), 201
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
     
+def create_folder(blog_id):
+    directory = f"../public/blog_image/{blog_id}"
+    
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        return f"Folder '{blog_id}' created successfully."
+    else:
+        return f"Folder '{blog_id}' already exists."
     
 @app.route('/api/blogs/<int:post_id>', methods=['PUT'])
 def update_blog(post_id):
@@ -103,10 +113,19 @@ def delete_blog(post_id):
     try:
         db.session.execute(text("DELETE FROM Posts WHERE post_id = :post_id"), {"post_id": post_id})
         db.session.commit()
+        delete_folder(post_id)
         return jsonify({'message': 'Post deleted successfully'}), 200
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+    
+def delete_folder(blog_id):
+    directory = f"../public/blog_image/{blog_id}"
+    if os.path.exists(directory):
+        shutil.rmtree(directory)
+        return f"Folder '{blog_id}' deleted successfully."
+    else:
+        return f"Folder '{blog_id}' does not exist."
 
 
 @app.route('/api/numberofblogs', methods=['GET'])

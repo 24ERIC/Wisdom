@@ -17,7 +17,6 @@ function DragDropFileUpload({ onFileUpload, blogId }) {
         setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
-
     const handleFileChange = (file) => {
         setLoading(true);
         const formData = new FormData();
@@ -40,7 +39,6 @@ function DragDropFileUpload({ onFileUpload, blogId }) {
         });
     };
 
-
     const handleDragLeave = useCallback((event) => {
         event.preventDefault();
         setDragOver(false);
@@ -58,22 +56,9 @@ function DragDropFileUpload({ onFileUpload, blogId }) {
         []
     );
 
-    // const handleFileChange = (file) => {
-    //     setLoading(true);
-    //     const imageName = file.name; 
-
-    //     onFileUpload(file).then(() => {
-    //         const reader = new FileReader();
-    //         reader.onloadend = () => {
-    //             setLoading(false);
-    //             setImagePreviews(prev => [...prev, { url: reader.result, name: imageName }]);
-    //         };
-    //         reader.readAsDataURL(file);
-    //     });
-    // };
     const generateMarkdownText = () => {
         return imagePreviews.map(preview => 
-            `![](/blog_image/${blogId}/${preview.name})`).join('\n');
+            `![](/public/blog_image/${blogId}/${preview.name})`).join('\n');
     };
     useEffect(() => {
         if (imagePreviews.length > 0) {
@@ -171,7 +156,7 @@ function DragDropFileUpload({ onFileUpload, blogId }) {
                         </IconButton>
                         <Box
                             component="img"
-                            src={image}
+                            src={image.url}
                             alt={`Image Preview ${index + 1}`}
                             sx={{ width: 'auto', height: 100, marginRight: 2 }}
                         />
