@@ -248,6 +248,14 @@ const Search = () => {
     const handleMarkdownClose = () => {
         setMarkdownOpen(false);
     };
+    const handleMarkdownGenerated = useCallback((markdownText) => {
+        console.log('Generated Markdown Text:', markdownText);
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            content: `${prevFormData.content}\n${markdownText}`
+        }));
+        setMarkdownText(prevMarkdownText => `${prevMarkdownText}\n${markdownText}`);
+    }, []);
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 50 },
@@ -360,6 +368,7 @@ const Search = () => {
                             <DragDropFileUpload
                                 currentPostId={uploadPostId}
                                 onFileUpload={(file) => console.log('File uploaded:', file, "Post ID", uploadPostId)}
+                                onMarkdownGenerated={handleMarkdownGenerated}
                             />
 
 

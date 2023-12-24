@@ -4,12 +4,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import axios from 'axios';
 
-const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
+const DragDropFileUpload = ({ currentPostId, onFileUpload, onMarkdownGenerated }) => {
     console.log("currentPostId in DragDropFileUpload:", currentPostId);
     const [dragOver, setDragOver] = useState(false);
     const [loading, setLoading] = useState(false);
     const [imagePreviews, setImagePreviews] = useState([]);
     const [fileCount, setFileCount] = useState(0);
+    const [timeStamp, setTimeStamp] = useState("");
 
     const handleDragOver = useCallback((event) => {
         event.preventDefault();
@@ -22,6 +23,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
     const handleFileChange = (file) => {
         setLoading(true);
         const timestamp = Date.now();
+        setTimeStamp(timestamp);
         const extension = file.name.substring(file.name.lastIndexOf('.'));
         const newFileName = `${timestamp}${extension}`;
     
@@ -67,7 +69,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
     const generateMarkdownText = () => {
         return imagePreviews.map((preview, index) => {
             const extension = preview.name.substring(preview.name.lastIndexOf('.'));
-            const newFileName = `${index + 1}${extension}`;
+            const newFileName = `${timeStamp}${extension}`;
             return `![](/blog_image/${currentPostId}/${newFileName})`;
         }).join('\n');
     };
@@ -75,9 +77,10 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
     useEffect(() => {
         if (imagePreviews.length > 0) {
             const markdownText = generateMarkdownText();
-            navigator.clipboard.writeText(markdownText);
+            console.log('Calling onMarkdownGenerated with:', markdownText);
+            onMarkdownGenerated(markdownText);
         }
-    }, [imagePreviews]);
+    }, [imagePreviews, onMarkdownGenerated]);
 
     const handleChange = useCallback(
         (event) => {
