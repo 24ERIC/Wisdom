@@ -42,6 +42,8 @@ const Search = () => {
     const [fullScreenContent, setFullScreenContent] = useState('');
     const [fullScreenZoomLevel, setFullScreenZoomLevel] = useState(0.7);
 
+    const [isEditing, setIsEditing] = useState(false);
+
     const zoomInFullScreen = () => {
         setFullScreenZoomLevel(fullScreenZoomLevel * 1.1);
     };
@@ -60,7 +62,7 @@ const Search = () => {
                 if (Array.isArray(response.data)) {
                     const updatedRows = response.data.map(post => ({
                         ...post,
-                        id: post.post_id // Adding id property
+                        id: post.post_id 
                     }));
                     setRows(updatedRows);
                 } else {
@@ -69,8 +71,8 @@ const Search = () => {
             })
             .catch(error => console.error('Error fetching blog posts:', error));
     }, []);
-    
-    
+
+
 
     useEffect(() => {
         setSearchInput(initialSearch);
@@ -118,13 +120,32 @@ const Search = () => {
 
     const filteredRows = getFilteredRows();
 
-    const handleOpen = () => {
-        setFormData({ id: null, title: '', tag: '', content: '' });
-        setMarkdownText('');
+    const handleOpen = async () => {
+        if (!isEditing) {
+            try {
+                const response = await axios.post('/api/blogs', {
+                    title: 'New Blog Post',
+                    content: '',
+                    tag: ''
+                });
+
+                setFormData({
+                    id: response.data.id,
+                    title: response.data.title,
+                    tag: response.data.tag,
+                    content: response.data.content
+                });
+            } catch (error) {
+                console.error('Error creating new blog post:', error);
+            }
+        }
+
+        setIsEditing(true);
         setOpen(true);
     };
 
     const handleEdit = (blog) => {
+        setIsEditing(true);
         setFormData({
             id: blog.id,
             title: blog.title,
@@ -143,7 +164,10 @@ const Search = () => {
         setFormData({ ...formData, content: event.target.value });
     };
 
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        setIsEditing(false);
+        setOpen(false);
+    };
 
     const handleAddOrUpdateBlogPost = async () => {
         if (!formData.title || !formData.content) {
@@ -395,6 +419,14 @@ const Search = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            {/* <Fab color="primary" aria-label="add" style={{
+                position: 'fixed',
+                right: '60px',
+                bottom: '60px',
+                zIndex: 1000,
+            }} onClick={handleOpen}>
+                <AddIcon fontSize="large" />
+            </Fab> */}
             <Fab color="primary" aria-label="add" style={{
                 position: 'fixed',
                 right: '60px',
