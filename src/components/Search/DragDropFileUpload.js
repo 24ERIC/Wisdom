@@ -21,12 +21,14 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
 
     const handleFileChange = (file) => {
         setLoading(true);
-        setFileCount(prevCount => prevCount + 1);
-        const newFileName = `${fileCount + 1}${file.name.substring(file.name.lastIndexOf('.'))}`;
+        const timestamp = Date.now();
+        const extension = file.name.substring(file.name.lastIndexOf('.'));
+        const newFileName = `${timestamp}${extension}`;
+    
         const newFile = new File([file], newFileName, { type: file.type });
         const formData = new FormData();
         formData.append('file', newFile);
-
+    
         axios.post(`/api/imageupload/${currentPostId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -35,7 +37,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setLoading(false);
-                setImagePreviews(prev => [...prev, { url: reader.result, name: file.name }]);
+                setImagePreviews(prev => [...prev, { url: reader.result, name: newFileName }]);
             };
             reader.readAsDataURL(file);
         }).catch(error => {
@@ -43,6 +45,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
             setLoading(false);
         });
     };
+    
 
     const handleDragLeave = useCallback((event) => {
         event.preventDefault();
