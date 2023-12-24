@@ -4,10 +4,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import axios from 'axios';
 
-function DragDropFileUpload({ onFileUpload, blogId }) {
+const DragDropFileUpload = ({ currentPostId, onFileUpload }) => {
+    console.log("currentPostId in DragDropFileUpload:", currentPostId);
     const [dragOver, setDragOver] = useState(false);
     const [loading, setLoading] = useState(false);
     const [imagePreviews, setImagePreviews] = useState([]);
+    const [fileCount, setFileCount] = useState(0);
 
     const handleDragOver = useCallback((event) => {
         event.preventDefault();
@@ -19,8 +21,11 @@ function DragDropFileUpload({ onFileUpload, blogId }) {
 
     const handleFileChange = (file) => {
         setLoading(true);
+        setFileCount(prevCount => prevCount + 1);
+        const newFileName = `${fileCount + 1}${file.name.substring(file.name.lastIndexOf('.'))}`;
+        const newFile = new File([file], newFileName, { type: file.type });
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', newFile);
 
         axios.post('/api/imageupload', formData, {
             headers: {
@@ -57,9 +62,13 @@ function DragDropFileUpload({ onFileUpload, blogId }) {
     );
 
     const generateMarkdownText = () => {
-        return imagePreviews.map(preview => 
-            `![](/public/blog_image/${blogId}/${preview.name})`).join('\n');
+        return imagePreviews.map((preview, index) => {
+            const extension = preview.name.substring(preview.name.lastIndexOf('.'));
+            const newFileName = `${index + 1}${extension}`;
+            return `![](/public/blog_image/${currentPostId}/${newFileName})`;
+        }).join('\n');
     };
+    
     useEffect(() => {
         if (imagePreviews.length > 0) {
             const markdownText = generateMarkdownText();

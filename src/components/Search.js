@@ -26,7 +26,9 @@ import DragDropFileUpload from './Search/DragDropFileUpload';
 const Search = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '' });
+    // const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '' });
+    const [formData, setFormData] = useState({ id: '', title: '', tag: '', content: '' });
+
     const [markdownOpen, setMarkdownOpen] = useState(false);
     const [currentBlogContent, setCurrentBlogContent] = useState('');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -41,7 +43,7 @@ const Search = () => {
     const [fullScreenOpen, setFullScreenOpen] = useState(false);
     const [fullScreenContent, setFullScreenContent] = useState('');
     const [fullScreenZoomLevel, setFullScreenZoomLevel] = useState(0.7);
-
+    const [uploadPostId, setUploadPostId] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
 
     const zoomInFullScreen = () => {
@@ -59,15 +61,11 @@ const Search = () => {
     useEffect(() => {
         axios.get('/api/blogs')
             .then(response => {
-                if (Array.isArray(response.data)) {
-                    const updatedRows = response.data.map(post => ({
-                        ...post,
-                        id: post.post_id 
-                    }));
-                    setRows(updatedRows);
-                } else {
-                    console.error('Expected an array of blog posts, but received:', response.data);
-                }
+                const updatedRows = response.data.map(post => ({
+                    ...post,
+                    id: post.post_id
+                }));
+                setRows(updatedRows);
             })
             .catch(error => console.error('Error fetching blog posts:', error));
     }, []);
@@ -128,6 +126,7 @@ const Search = () => {
                     content: '',
                     tag: ''
                 });
+                console.log("inside handle open", response);
 
                 setFormData({
                     id: response.data.id,
@@ -135,6 +134,8 @@ const Search = () => {
                     tag: response.data.tag,
                     content: response.data.content
                 });
+                console.log("inside handle open", formData);
+
             } catch (error) {
                 console.error('Error creating new blog post:', error);
             }
@@ -145,16 +146,26 @@ const Search = () => {
     };
 
     const handleEdit = (blog) => {
-        setIsEditing(true);
-        setFormData({
-            id: blog.id,
+        console.log("handleEdit called with blog:", blog);
+        const updatedFormData = {
+            id: blog.post_id,
             title: blog.title,
             tag: blog.tag,
             content: blog.content
-        });
+        };
+        setIsEditing(true);
+        setFormData(updatedFormData);
+        console.log("handle edit, form data", updatedFormData);
         setMarkdownText(blog.content);
         setOpen(true);
+        setUploadPostId(blog.post_id);
+        console.log("uploadPostId set to:", blog.post_id);
     };
+
+    useEffect(() => {
+        console.log("uploadPostId updated to:", uploadPostId);
+    }, [uploadPostId]);
+
 
 
 
@@ -197,6 +208,7 @@ const Search = () => {
     const fetchData = async () => {
         try {
             const response = await axios.get('/api/blogs');
+
             setRows(response.data);
         } catch (error) {
             console.error('Error fetching blog posts:', error);
@@ -231,11 +243,6 @@ const Search = () => {
 
     const handleCancelDelete = () => {
         setConfirmDeleteOpen(false);
-    };
-
-    const handleRead = (blog) => {
-        setCurrentBlogContent(blog.content);
-        setMarkdownOpen(true);
     };
 
     const handleMarkdownClose = () => {
@@ -350,7 +357,12 @@ const Search = () => {
                                 value={formData.tag}
                                 onChange={handleChange}
                             />
-                            <DragDropFileUpload onFileUpload={(file) => console.log('File uploaded:', file, "Post ID", formData.id)} />
+                            <DragDropFileUpload
+                                currentPostId={uploadPostId}
+                                onFileUpload={(file) => console.log('File uploaded:', file, "Post ID", uploadPostId)}
+                            />
+
+
                             <TextField
                                 margin="dense"
                                 name="content"
