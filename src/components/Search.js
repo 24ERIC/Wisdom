@@ -21,7 +21,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Divider } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-
+import DragDropFileUpload from './Search/DragDropFileUpload';
 
 const Search = () => {
     const [rows, setRows] = useState([]);
@@ -326,6 +326,7 @@ const Search = () => {
                                 value={formData.tag}
                                 onChange={handleChange}
                             />
+                            <DragDropFileUpload onFileUpload={(file) => console.log('File uploaded:', file)} />
                             <TextField
                                 margin="dense"
                                 name="content"
