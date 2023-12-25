@@ -155,29 +155,6 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload, onMarkdownGenerated }
                     }
                 }}
             >
-                {imagePreviews.map((image, index) => (
-                    <Box key={index} position="relative">
-                        <IconButton
-                            onClick={() => removeImagePreview(index)}
-                            style={{
-                                position: 'absolute',
-                                right: 0,
-                                top: 0,
-                                color: 'white',
-                                background: 'rgba(0, 0, 0, 0.6)',
-                                borderRadius: '50%',
-                            }}
-                        >
-                            <CloseIcon />
-                        </IconButton>
-                        <Box
-                            component="img"
-                            src={image.url}
-                            alt={`Image Preview ${index + 1}`}
-                            sx={{ width: 'auto', height: 100, marginRight: 2 }}
-                        />
-                    </Box>
-                ))}
             </Box>
         </Box>
     );
