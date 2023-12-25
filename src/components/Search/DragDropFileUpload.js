@@ -67,11 +67,12 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload, onMarkdownGenerated }
     );
 
     const generateMarkdownText = () => {
-        return imagePreviews.map((preview, index) => {
-            const extension = preview.name.substring(preview.name.lastIndexOf('.'));
-            const newFileName = `${timeStamp}${extension}`;
-            return `![](/blog_image/${currentPostId}/${newFileName})`;
-        }).join('\n');
+        if (imagePreviews.length === 0) return "";
+    
+        const latestPreview = imagePreviews[imagePreviews.length - 1];
+        const extension = latestPreview.name.substring(latestPreview.name.lastIndexOf('.'));
+        const newFileName = `${timeStamp}${extension}`;
+        return `![](/blog_image/${currentPostId}/${newFileName})`;
     };
     
     useEffect(() => {
