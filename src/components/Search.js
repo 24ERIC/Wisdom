@@ -70,7 +70,14 @@ const Search = () => {
             .catch(error => console.error('Error fetching blog posts:', error));
     }, []);
 
-
+    const CustomImage = (props) => {
+        return (
+            <img
+                {...props}
+                style={{ maxWidth: '600px', maxHeight: '600px', objectFit: 'contain' }}
+            />
+        );
+    };
 
     useEffect(() => {
         setSearchInput(initialSearch);
@@ -395,7 +402,18 @@ const Search = () => {
                                 transform: `scale(${zoomLevel})`,
                                 transformOrigin: 'top left',
                             }}>
-                                <Markdown>{markdownText}</Markdown>
+
+                                <Markdown
+                                    options={{
+                                        overrides: {
+                                            img: {
+                                                component: CustomImage,
+                                            },
+                                        },
+                                    }}
+                                >
+                                    {markdownText}
+                                </Markdown>
                             </div>
                         </div>
                     </div>
@@ -417,7 +435,17 @@ const Search = () => {
             <Dialog open={markdownOpen} onClose={handleMarkdownClose} fullWidth maxWidth="lg">
                 <DialogTitle>Blog Content</DialogTitle>
                 <DialogContent>
-                    <Markdown>{currentBlogContent}</Markdown>
+                    <Markdown
+                        options={{
+                            overrides: {
+                                img: {
+                                    component: CustomImage,
+                                },
+                            },
+                        }}
+                    >
+                        {currentBlogContent}
+                    </Markdown>
                 </DialogContent>
                 <DialogActions>
 
@@ -452,7 +480,17 @@ const Search = () => {
                 <DialogTitle>Blog Content</DialogTitle>
                 <DialogContent>
                     <div style={{ transform: `scale(${fullScreenZoomLevel})`, transformOrigin: 'top left' }}>
-                        <Markdown>{fullScreenContent}</Markdown>
+                        <Markdown
+                            options={{
+                                overrides: {
+                                    img: {
+                                        component: CustomImage,
+                                    },
+                                },
+                            }}
+                        >
+                            {fullScreenContent}
+                        </Markdown>
                     </div>
                 </DialogContent>
                 <DialogActions>
