@@ -1,0 +1,16 @@
+[
+  {
+    "categoryName": "Work",
+    "todos": [
+      { "id": 1, "task": "Email client", "completed": false },
+      { "id": 2, "task": "Prepare presentation", "completed": false }
+    ]
+  },
+  {
+    "categoryName": "Personal",
+    "todos": [
+      { "id": 1, "task": "Grocery shopping", "completed": false },
+      { "id": 2, "task": "Call Mom", "completed": true }
+    ]
+  }
+]
