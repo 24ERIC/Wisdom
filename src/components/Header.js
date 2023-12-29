@@ -63,9 +63,6 @@ export default function Header() {
                             <Link href="/search" sx={{ textDecoration: 'none', color: 'rgba(200, 200, 200, 0.8)', fontSize: '30px', '&:hover': { color: 'white' } }}>Search</Link>
                         </Button>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
-                            <Link href="/plan" sx={{ textDecoration: 'none', color: 'rgba(200, 200, 200, 0.8)', fontSize: '30px', '&:hover': { color: 'white' } }}>Plan</Link>
-                        </Button>
-                        <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>
                             <Link href="/blogs" sx={{ textDecoration: 'none', color: 'rgba(200, 200, 200, 0.8)', fontSize: '30px', '&:hover': { color: 'white' } }}>Blogs</Link>
                         </Button>
                         <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'white', display: 'block', textTransform: 'none' }}>

@@ -21,12 +21,13 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Divider } from '@mui/material';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-
+import DragDropFileUpload from './Search/DragDropFileUpload';
 
 const Search = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '' });
+    const [formData, setFormData] = useState({ id: '', title: '', tag: '', content: '' });
+
     const [markdownOpen, setMarkdownOpen] = useState(false);
     const [currentBlogContent, setCurrentBlogContent] = useState('');
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -41,6 +42,8 @@ const Search = () => {
     const [fullScreenOpen, setFullScreenOpen] = useState(false);
     const [fullScreenContent, setFullScreenContent] = useState('');
     const [fullScreenZoomLevel, setFullScreenZoomLevel] = useState(0.7);
+    const [uploadPostId, setUploadPostId] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     const zoomInFullScreen = () => {
         setFullScreenZoomLevel(fullScreenZoomLevel * 1.1);
@@ -57,20 +60,23 @@ const Search = () => {
     useEffect(() => {
         axios.get('/api/blogs')
             .then(response => {
-                if (Array.isArray(response.data)) {
-                    const updatedRows = response.data.map(post => ({
-                        ...post,
-                        id: post.post_id // Adding id property
-                    }));
-                    setRows(updatedRows);
-                } else {
-                    console.error('Expected an array of blog posts, but received:', response.data);
-                }
+                const updatedRows = response.data.map(post => ({
+                    ...post,
+                    id: post.post_id
+                }));
+                setRows(updatedRows);
             })
             .catch(error => console.error('Error fetching blog posts:', error));
     }, []);
-    
-    
+
+    const CustomImage = (props) => {
+        return (
+            <img
+                {...props}
+                style={{ maxWidth: '600px', maxHeight: '600px', objectFit: 'contain' }}
+            />
+        );
+    };
 
     useEffect(() => {
         setSearchInput(initialSearch);
@@ -97,7 +103,6 @@ const Search = () => {
             .catch(error => console.error('Error incrementing view count:', error));
     };
 
-
     const handleFullScreenClose = () => {
         setFullScreenOpen(false);
     };
@@ -118,24 +123,60 @@ const Search = () => {
 
     const filteredRows = getFilteredRows();
 
-    const handleOpen = () => {
-        setFormData({ id: null, title: '', tag: '', content: '' });
-        setMarkdownText('');
-        setOpen(true);
+    const handleOpen = async () => {
+        if (!isEditing) {
+            try {
+                const response = await axios.post('/api/blogs', {
+                    title: 'New Blog Post',
+                    content: '',
+                    tag: ''
+                });
+                console.log("inside handle open", response);
+
+                setFormData({
+                    id: response.data.id,
+                    title: response.data.title,
+                    tag: response.data.tag,
+                    content: response.data.content
+                });
+                console.log("inside handle open", formData);
+
+            } catch (error) {
+                console.error('Error creating new blog post:', error);
+            }
+        }
+
+        axios.get('/api/blogs')
+            .then(response => {
+                const updatedRows = response.data.map(post => ({
+                    ...post,
+                    id: post.post_id
+                }));
+                setRows(updatedRows);
+            })
+            .catch(error => console.error('Error fetching blog posts:', error));
     };
 
     const handleEdit = (blog) => {
-        setFormData({
-            id: blog.id,
+        console.log("handleEdit called with blog:", blog);
+        const updatedFormData = {
+            id: blog.post_id,
             title: blog.title,
             tag: blog.tag,
             content: blog.content
-        });
+        };
+        setIsEditing(true);
+        setFormData(updatedFormData);
+        console.log("handle edit, form data", updatedFormData);
         setMarkdownText(blog.content);
         setOpen(true);
+        setUploadPostId(blog.post_id);
+        console.log("uploadPostId set to:", blog.post_id);
     };
 
-
+    useEffect(() => {
+        console.log("uploadPostId updated to:", uploadPostId);
+    }, [uploadPostId]);
 
     const handleMarkdownChange = (event) => {
         const newContent = event.target.value;
@@ -143,7 +184,10 @@ const Search = () => {
         setFormData({ ...formData, content: event.target.value });
     };
 
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        setIsEditing(false);
+        setOpen(false);
+    };
 
     const handleAddOrUpdateBlogPost = async () => {
         if (!formData.title || !formData.content) {
@@ -173,6 +217,7 @@ const Search = () => {
     const fetchData = async () => {
         try {
             const response = await axios.get('/api/blogs');
+
             setRows(response.data);
         } catch (error) {
             console.error('Error fetching blog posts:', error);
@@ -187,7 +232,6 @@ const Search = () => {
             setFormData({ ...formData, [name]: value });
         }
     };
-
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
@@ -209,14 +253,17 @@ const Search = () => {
         setConfirmDeleteOpen(false);
     };
 
-    const handleRead = (blog) => {
-        setCurrentBlogContent(blog.content);
-        setMarkdownOpen(true);
-    };
-
     const handleMarkdownClose = () => {
         setMarkdownOpen(false);
     };
+    const handleMarkdownGenerated = useCallback((markdownText) => {
+        console.log('Generated Markdown Text:', markdownText);
+        setFormData(prevFormData => ({
+            ...prevFormData,
+            content: `${prevFormData.content}\n${markdownText}`
+        }));
+        setMarkdownText(prevMarkdownText => `${prevMarkdownText}\n${markdownText}`);
+    }, []);
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 50 },
@@ -277,7 +324,6 @@ const Search = () => {
                     },
                 }}
             />
-
             <DataGrid
                 initialState={{
                     sorting: {
@@ -326,6 +372,11 @@ const Search = () => {
                                 value={formData.tag}
                                 onChange={handleChange}
                             />
+                            <DragDropFileUpload
+                                currentPostId={uploadPostId}
+                                onFileUpload={(file) => console.log('File uploaded:', file, "Post ID", uploadPostId)}
+                                onMarkdownGenerated={handleMarkdownGenerated}
+                            />
                             <TextField
                                 margin="dense"
                                 name="content"
@@ -349,7 +400,17 @@ const Search = () => {
                                 transform: `scale(${zoomLevel})`,
                                 transformOrigin: 'top left',
                             }}>
-                                <Markdown>{markdownText}</Markdown>
+                                <Markdown
+                                    options={{
+                                        overrides: {
+                                            img: {
+                                                component: CustomImage,
+                                            },
+                                        },
+                                    }}
+                                >
+                                    {markdownText}
+                                </Markdown>
                             </div>
                         </div>
                     </div>
@@ -371,7 +432,17 @@ const Search = () => {
             <Dialog open={markdownOpen} onClose={handleMarkdownClose} fullWidth maxWidth="lg">
                 <DialogTitle>Blog Content</DialogTitle>
                 <DialogContent>
-                    <Markdown>{currentBlogContent}</Markdown>
+                    <Markdown
+                        options={{
+                            overrides: {
+                                img: {
+                                    component: CustomImage,
+                                },
+                            },
+                        }}
+                    >
+                        {currentBlogContent}
+                    </Markdown>
                 </DialogContent>
                 <DialogActions>
 
@@ -406,7 +477,17 @@ const Search = () => {
                 <DialogTitle>Blog Content</DialogTitle>
                 <DialogContent>
                     <div style={{ transform: `scale(${fullScreenZoomLevel})`, transformOrigin: 'top left' }}>
-                        <Markdown>{fullScreenContent}</Markdown>
+                        <Markdown
+                            options={{
+                                overrides: {
+                                    img: {
+                                        component: CustomImage,
+                                    },
+                                },
+                            }}
+                        >
+                            {fullScreenContent}
+                        </Markdown>
                     </div>
                 </DialogContent>
                 <DialogActions>
