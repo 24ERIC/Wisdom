@@ -26,7 +26,6 @@ import DragDropFileUpload from './Search/DragDropFileUpload';
 const Search = () => {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
-    // const [formData, setFormData] = useState({ id: null, title: '', tag: '', content: '' });
     const [formData, setFormData] = useState({ id: '', title: '', tag: '', content: '' });
 
     const [markdownOpen, setMarkdownOpen] = useState(false);
@@ -104,7 +103,6 @@ const Search = () => {
             .catch(error => console.error('Error incrementing view count:', error));
     };
 
-
     const handleFullScreenClose = () => {
         setFullScreenOpen(false);
     };
@@ -148,8 +146,15 @@ const Search = () => {
             }
         }
 
-        setIsEditing(true);
-        setOpen(true);
+        axios.get('/api/blogs')
+            .then(response => {
+                const updatedRows = response.data.map(post => ({
+                    ...post,
+                    id: post.post_id
+                }));
+                setRows(updatedRows);
+            })
+            .catch(error => console.error('Error fetching blog posts:', error));
     };
 
     const handleEdit = (blog) => {
@@ -172,9 +177,6 @@ const Search = () => {
     useEffect(() => {
         console.log("uploadPostId updated to:", uploadPostId);
     }, [uploadPostId]);
-
-
-
 
     const handleMarkdownChange = (event) => {
         const newContent = event.target.value;
@@ -230,7 +232,6 @@ const Search = () => {
             setFormData({ ...formData, [name]: value });
         }
     };
-
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
@@ -323,7 +324,6 @@ const Search = () => {
                     },
                 }}
             />
-
             <DataGrid
                 initialState={{
                     sorting: {
@@ -377,8 +377,6 @@ const Search = () => {
                                 onFileUpload={(file) => console.log('File uploaded:', file, "Post ID", uploadPostId)}
                                 onMarkdownGenerated={handleMarkdownGenerated}
                             />
-
-
                             <TextField
                                 margin="dense"
                                 name="content"
@@ -402,7 +400,6 @@ const Search = () => {
                                 transform: `scale(${zoomLevel})`,
                                 transformOrigin: 'top left',
                             }}>
-
                                 <Markdown
                                     options={{
                                         overrides: {
