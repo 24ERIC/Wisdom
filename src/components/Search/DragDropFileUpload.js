@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Paper, Typography, IconButton, CircularProgress } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import axios from 'axios';
 
@@ -9,16 +8,12 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload, onMarkdownGenerated }
     const [dragOver, setDragOver] = useState(false);
     const [loading, setLoading] = useState(false);
     const [imagePreviews, setImagePreviews] = useState([]);
-    const [fileCount, setFileCount] = useState(0);
     const [timeStamp, setTimeStamp] = useState("");
 
     const handleDragOver = useCallback((event) => {
         event.preventDefault();
         setDragOver(true);
     }, []);
-    const removeImagePreview = (indexToRemove) => {
-        setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
 
     const handleFileChange = (file) => {
         setLoading(true);
@@ -48,7 +43,6 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload, onMarkdownGenerated }
         });
     };
     
-
     const handleDragLeave = useCallback((event) => {
         event.preventDefault();
         setDragOver(false);

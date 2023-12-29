@@ -1,23 +1,22 @@
-import { Height } from '@mui/icons-material';
 import React from 'react';
 
 const titleStyles = {
   fontSize: '4rem',
   fontWeight: 'bold',
-  userSelect: 'none', // Prevent text selection
-  pointerEvents: 'none', // Disable pointer events on the entire title
-  cursor: 'default', // Set the cursor to default
+  userSelect: 'none',
+  pointerEvents: 'none',
+  cursor: 'default',
   textAlign: 'center',
   marginTop: '100px',
 };
 
 const letterStyles = [
-  { color: '#4285F4' }, // blue
-  { color: '#EA4335' }, // red
-  { color: '#FBBC05' }, // yellow
-  { color: '#34A853' }, // green
-  { color: '#EA4335' }, // red
-  { color: '#4285F4' }, // blue
+  { color: '#4285F4' },
+  { color: '#EA4335' },
+  { color: '#FBBC05' },
+  { color: '#34A853' },
+  { color: '#EA4335' },
+  { color: '#4285F4' },
 ];
 
 const HomeTitle = () => {

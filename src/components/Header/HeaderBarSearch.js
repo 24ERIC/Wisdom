@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import HeaderSearchPopup from './HeaderSearchPopup'; // Ensure this path is correct
+import HeaderSearchPopup from './HeaderSearchPopup';
 
 
 const Search = styled('div')(({ theme }) => ({
@@ -32,8 +32,6 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
     cursor: 'pointer',
 }));
 
-
-
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
     color: 'inherit',
     '& .MuiInputBase-input': {
@@ -42,7 +40,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
         width: '100%',
     },
 }));
-
 
 export default function HeaderBarSearch() {
     const [open, setOpen] = React.useState(false);
@@ -65,4 +62,3 @@ export default function HeaderBarSearch() {
         </>
     );
 }
-
