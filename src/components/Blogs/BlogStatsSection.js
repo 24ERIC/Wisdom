@@ -13,8 +13,8 @@ const StatsSection = () => {
     const [tags, setTags] = useState(0);
     
     useEffect(() => {
-        axios.get('/api/numberofblogs').then(res => setBlogs(res.data));
-        axios.get('/api/numberofblogs').then(res => {
+        axios.get('/api/blogs/numberofblogs').then(res => setBlogs(res.data));
+        axios.get('/api/blogs/numberofblogs').then(res => {
           const modifiedData = Math.round(res.data.numberOfBlogs * 4.5);
           setTags(modifiedData);
       });

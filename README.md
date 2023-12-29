@@ -7,6 +7,7 @@ npm install @mui/x-data-grid
 npm install react-markdown
 npm install react-pro-sidebar
 npm install lodash
+npm install quill socket.io-client
 
 
 ### backend
@@ -17,7 +18,7 @@ npm install http-proxy-middleware --save
 pip install Flask-Migrate
 pip install markdown
 npm install axios 
-
+pip install flask-socketio
 
 ### database
 sqlite3 blog_database.db

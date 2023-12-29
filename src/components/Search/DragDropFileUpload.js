@@ -26,7 +26,7 @@ const DragDropFileUpload = ({ currentPostId, onFileUpload, onMarkdownGenerated }
         const formData = new FormData();
         formData.append('file', newFile);
     
-        axios.post(`/api/imageupload/${currentPostId}`, formData, {
+        axios.post(`/api/blogs/imageupload/${currentPostId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

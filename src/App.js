@@ -5,13 +5,13 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Blogs from './components/Blogs';
 import Tools from './components/Tools';
-import Audio from './components/Tools/Audio/Audio';
-import Video from './components/Tools/Video/Video';
-import Finance from './components/Tools/Finance/Finance';
-import CyberSecurity from './components/Tools/CyberSecurity/CyberSecurity';
-import MLAI from './components/Tools/MLAI/MLAI';
-import Gym from './components/Tools/Gym/Gym';
-import Food from './components/Tools/Food/Food';
+// import Audio from './components/Tools/Audio/Audio';
+// import Video from './components/Tools/Video/Video';
+// import Finance from './components/Tools/Finance/Finance';
+// import CyberSecurity from './components/Tools/CyberSecurity/CyberSecurity';
+// import MLAI from './components/Tools/MLAI/MLAI';
+// import Gym from './components/Tools/Gym/Gym';
+// import Food from './components/Tools/Food/Food';
 import Search from './components/Search';
 
 
@@ -20,13 +20,13 @@ function App() {
     <Router>
       <Header />
       <Switch>
-        <Route path="/tools/audio" component={Audio} />
+        {/* <Route path="/tools/audio" component={Audio} />
         <Route path="/tools/video" component={Video} />
         <Route path="/tools/finance" component={Finance} />
         <Route path="/tools/cybersecurity" component={CyberSecurity} />
         <Route path="/tools/mlai" component={MLAI} />
         <Route path="/tools/gym" component={Gym} />
-        <Route path="/tools/food" component={Food} />
+        <Route path="/tools/food" component={Food} /> */}
         <Route path="/tools" component={Tools} />
         <Route path="/blogs" component={Blogs} />
         <Route path="/search" component={Search} />

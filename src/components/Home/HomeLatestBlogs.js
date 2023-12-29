@@ -66,7 +66,7 @@ const HomeLatestBlogs = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/latestblogs')
+    axios.get('/api/blogs/latestblogs')
       .then(response => {
         setBlogs(response.data);
       })

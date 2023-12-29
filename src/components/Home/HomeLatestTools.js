@@ -65,7 +65,7 @@ const HomeLatestTools = () => {
 
   useEffect(() => {
     axios
-      .get('/api/latesttools')
+      .get('/api/tools/latesttools')
       .then((response) => {
         setTools(response.data);
       })
