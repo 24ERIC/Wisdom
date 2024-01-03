@@ -56,16 +56,28 @@ const RichTextEditor = () => {
   }, []);
 
   const handleKeyPress = useCallback((evt, blockId) => {
-    console.log("into function handleKeyPress")
-    if (evt.key === '/' ) {
-      console.log("into function handleKeyPress, inside if")
+    console.log("into function handleKeyPress");
+    if (evt.key === '/') {
+      console.log("into function handleKeyPress, inside if for '/'");
       evt.preventDefault();
       const { x, y } = getCaretCoordinates(evt.target, evt.target.selectionStart);
       setMenuPosition({ x, y });
       setShowMenu(true);
       setActiveBlockId(blockId);
+    } else if (evt.key === 'Enter') {
+      console.log("into function handleKeyPress, inside if for 'Enter'");
+      evt.preventDefault();
+      const newBlock = { id: Date.now(), html: '', type: 'p' };
+      setBlocks(currentBlocks => {
+        const index = currentBlocks.findIndex(block => block.id === blockId);
+        const newBlocks = [...currentBlocks];
+        newBlocks.splice(index + 1, 0, newBlock);
+        return newBlocks;
+      });
+      setActiveBlockId(newBlock.id);
     }
   }, []);
+  
 
   const handleSelectMenuItem = useCallback((type) => {
     setShowMenu(false);
