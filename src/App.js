@@ -1,8 +1,15 @@
-import EditablePage from "./components/editablePage";
+import React from 'react';
+import RichTextEditor from './components/RichTextEditor'; 
 
-function App() {
+
+const App = () => {
   return (
-    <EditablePage />
+    <div className="App">
+      <header className="App-header">
+        <h1>Simple Rich Text Editor</h1>
+      </header>
+      <RichTextEditor />
+    </div>
   );
 }
 
