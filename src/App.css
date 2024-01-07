@@ -1,13 +1,16 @@
-.editable-block {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 10px;
+
+.app {
+  display: flex;
 }
 
-.editable-block.p {
-  min-height: 1em;
+.sidebar {
+  width: 200px; /* Fixed width for the sidebar */
+  height: 100vh; /* Full viewport height */
+  overflow-y: auto; /* Scroll if content is too long */
+  border-right: 1px solid #ccc; /* Border between sidebar and content */
 }
 
-.editable-block.h1 {
-  font-size: 2em;
+.page {
+  flex-grow: 1; /* Take up remaining space */
+  padding: 20px; /* Padding around content */
 }

@@ -1,16 +1,21 @@
 import React from 'react';
-import RichTextEditor from './components/RichTextEditor'; 
+import Page from './components/Page';
 
+const appStyle = {
+  height: '100vh',
+  width: '100vw',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#f0f0f0'
+};
 
 const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Simple Rich Text Editor</h1>
-      </header>
-      <RichTextEditor />
+    <div style={appStyle}>
+      <Page pageId={1} /> {/* Assuming pageId 1 is the root page */}
     </div>
   );
-}
+};
 
 export default App;
