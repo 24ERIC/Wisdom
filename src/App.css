@@ -1,16 +1,16 @@
-
-.app {
-  display: flex;
+.App {
+  font-family: Arial, sans-serif;
+  margin: 20px;
 }
 
-.sidebar {
-  width: 200px; /* Fixed width for the sidebar */
-  height: 100vh; /* Full viewport height */
-  overflow-y: auto; /* Scroll if content is too long */
-  border-right: 1px solid #ccc; /* Border between sidebar and content */
+.page-list {
+  margin-bottom: 20px;
 }
 
-.page {
-  flex-grow: 1; /* Take up remaining space */
-  padding: 20px; /* Padding around content */
+.page-item {
+  margin-top: 10px;
+}
+
+.page-content {
+  margin-top: 20px;
 }

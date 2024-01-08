@@ -1,44 +1,36 @@
 from flask import Flask, jsonify, request, abort
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app) 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
 class Block(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('block.id'), nullable=True)
-    content = db.Column(db.Text, nullable=False)
-    type = db.Column(db.String(50), nullable=False)
-    additional_metadata = db.Column(db.Text)  # Changed the name to 'additional_metadata'
-    children = db.relationship('Block', backref=db.backref('parent', remote_side=[id]), lazy=True)
-
+    parent_id = db.Column(db.Integer, nullable=True)
+    child_id = db.Column(db.Integer, nullable=True)
+    content = db.Column(db.Text, nullable=True)
+    type = db.Column(db.String(50), nullable=True)
+    meta = db.Column(db.Text, nullable=True)
+    indent = db.Column(db.Integer, default=0)
+# INSERT INTO block (parent_id, child_id, content, type, meta, indent) VALUES (NULL, 2, 'Blog id 1 content', 'Blog id 1 type', 'Blog id 1 Meta', 0);
+# INSERT INTO block (parent_id, child_id, content, type, meta, indent) VALUES (1, 3, 'Blog id 2 content', 'Blog id 2 type', 'Blog id 2 Meta', 0);
+# INSERT INTO block (parent_id, child_id, content, type, meta, indent) VALUES (2, 4, 'Blog id 3 content', 'Blog id 3 type', 'Blog id 3 Meta', 0);
 class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    block_id = db.Column(db.Integer, db.ForeignKey('block.id'), nullable=False, unique=True)
-    title = db.Column(db.String(100), nullable=False)
+    block_id = db.Column(db.Integer, nullable=True)
+    title = db.Column(db.String(100), nullable=True)
+# INSERT INTO page (block_id, block_id) VALUES (1, 'Root Page title');
 
-@app.route('/blocks', methods=['GET', 'POST'])
-def handle_blocks():
-    if request.method == 'GET':
-        blocks = Block.query.all()
-        return jsonify([{'id': block.id, 'content': block.content, 'type': block.type} for block in blocks])
-    elif request.method == 'POST':
-        data = request.json
-        new_block = Block(content=data['content'], type=data['type'], metadata=data.get('metadata', ''))
-        db.session.add(new_block)
-        db.session.commit()
-        return jsonify({'id': new_block.id}), 201
-
-@app.route('/blocks/<int:block_id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/blocks/<int:block_id>', methods=['PUT', 'DELETE'])
 def handle_block(block_id):
     block = Block.query.get(block_id)
     if not block:
         abort(404)
 
-    if request.method == 'GET':
-        return jsonify({'id': block.id, 'content': block.content, 'type': block.type, 'metadata': block.metadata})
-    elif request.method == 'PUT':
+    if request.method == 'PUT':
         data = request.json
         block.content = data['content']
         block.type = data['type']
@@ -46,7 +38,6 @@ def handle_block(block_id):
         db.session.commit()
         return jsonify({'id': block.id})
     elif request.method == 'DELETE':
-        # Recursively delete child blocks
         delete_recursive(block_id)
         db.session.commit()
         return jsonify({}), 204
@@ -57,26 +48,35 @@ def delete_recursive(block_id):
         delete_recursive(child.id)
     db.session.delete(block)
 
-@app.route('/pages', methods=['GET', 'POST'])
-def handle_pages():
-    if request.method == 'GET':
-        pages = Page.query.all()
-        return jsonify([{'id': page.id, 'title': page.title, 'block_id': page.block_id} for page in pages])
-    elif request.method == 'POST':
-        data = request.json
-        new_page = Page(title=data['title'], block_id=data['block_id'])
-        db.session.add(new_page)
-        db.session.commit()
-        return jsonify({'id': new_page.id}), 201
-
 @app.route('/pages/<int:page_id>', methods=['GET', 'PUT', 'DELETE'])
-def handle_page(page_id):
+def handle_page_put_delete(page_id):
     page = Page.query.get(page_id)
     if not page:
         abort(404)
-
     if request.method == 'GET':
-        return jsonify({'id': page.id, 'title': page.title, 'block_id': page.block_id})
+        def get_block_chain(block_id):
+            current_block = Block.query.get(block_id)
+            block_linked_list = []
+            while current_block is not None:
+                block_linked_list.append({
+                    'block_id': current_block.id,
+                    'block_content': current_block.content,
+                    'block_type': current_block.type,
+                    'block_meta': current_block.meta,
+                    'block_indent': current_block.indent
+                })
+                current_block = Block.query.get(current_block.child_id)
+                
+            return block_linked_list
+        response_data = [{
+            'page_id': page.id,
+            'page_title': page.title
+        }]
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", 
+              get_block_chain(page.block_id))
+        response_data.extend(get_block_chain(page.block_id))
+
+        return jsonify(response_data)
     elif request.method == 'PUT':
         data = request.json
         page.title = data['title']
