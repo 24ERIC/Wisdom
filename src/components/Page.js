@@ -17,32 +17,49 @@ function Page() {
     }, [id]);
 
     const handleContentChange = (content, index) => {
-        // Here we update the content of the block in the pageData array
         const updatedPageData = [...pageData];
         updatedPageData[index].block_content = content;
         setPageData(updatedPageData);
-
-        // This is where you would handle saving the updated content back to your server
-        // For example, using axios to send a PUT request
+    
+        // Debounce this PUT request or trigger it onBlur instead to reduce the number of requests
+        axios.put(`http://localhost:5000/blocks/${updatedPageData[index].block_id}`, {
+            content: content,
+            // include other block attributes if necessary
+        })
+        .then(response => {
+            console.log('Saved:', response.data);
+        })
+        .catch(error => {
+            console.error('Error saving block:', error);
+        });
     };
+    
 
     const renderBlock = (block, index) => {
         const handleInput = (event) => {
             handleContentChange(event.target.innerText, index + 1);
         };
-
+    
+        const blockProps = {
+            onInput: handleInput,
+            contentEditable: true,
+            suppressContentEditableWarning: true,
+            className: `block block-${block.block_type}`,
+        };
+    
         switch (block.block_type) {
             case 'header1':
-                return <h1 onInput={handleInput} contentEditable>{block.block_content}</h1>;
+                return <h1 {...blockProps}>{block.block_content}</h1>;
             case 'header2':
-                return <h2 onInput={handleInput} contentEditable>{block.block_content}</h2>;
+                return <h2 {...blockProps}>{block.block_content}</h2>;
             case 'header3':
-                return <h3 onInput={handleInput} contentEditable>{block.block_content}</h3>;
+                return <h3 {...blockProps}>{block.block_content}</h3>;
             case 'text':
             default:
-                return <p onInput={handleInput} contentEditable>{block.block_content}</p>;
+                return <p {...blockProps}>{block.block_content}</p>;
         }
     };
+    
 
     return (
         <div className="page-content">
