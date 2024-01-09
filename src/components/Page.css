@@ -4,7 +4,20 @@
 
 .blocks-container .block {
     margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+}
+
+.blocks-container h1 {
+    font-size: 2em; /* Adjust as needed */
+}
+
+.blocks-container h2 {
+    font-size: 1.5em; /* Adjust as needed */
+}
+
+.blocks-container h3 {
+    font-size: 1.17em; /* Adjust as needed */
+}
+
+.blocks-container p {
+    font-size: 1em; /* Adjust as needed */
 }
