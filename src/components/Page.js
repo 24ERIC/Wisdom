@@ -1,37 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import './Page.css';
 
 function Page() {
-    const [page, setPage] = useState(null);
+    const [pageData, setPageData] = useState(null);
     const { id } = useParams();
 
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
-                setPage(response.data);
+                console.log("!!!!!!!!!!", response.data);
+                setPageData(response.data);
             })
             .catch(error => console.error('Error fetching page:', error));
     }, [id]);
 
-    const renderBlockChain = (block) => {
-        if (!block) return null;
-
-        return (
-            <div className="block">
-                <div>{block.content}</div>
-                {block.childBlock && <div className="child-block">{renderBlockChain(block.childBlock)}</div>}
-            </div>
-        );
-    };
-
     return (
         <div className="page-content">
-            {page ? (
+            {pageData ? (
                 <>
-                    <h2>{page.title}</h2>
+                    <h2>{pageData[0].page_title}</h2>
                     <div className="blocks-container">
-                        {renderBlockChain(page.childBlock)}
+                        {pageData.slice(1).map(block => (
+                            <div key={block.block_id} className="block">
+                                <p>Content: {block.block_content}</p>
+                                <p>Type: {block.block_type}</p>
+                                <p>Meta: {block.block_meta}</p>
+                                <p>Indent: {block.block_indent}</p>
+                            </div>
+                        ))}
                     </div>
                 </>
             ) : (
