@@ -15,14 +15,11 @@ class Block(db.Model):
     type = db.Column(db.String(50), nullable=True)
     meta = db.Column(db.Text, nullable=True)
     indent = db.Column(db.Integer, default=0)
-# INSERT INTO block (parent_id, child_id, content, type, meta, indent) VALUES (NULL, 2, 'Blog id 1 content', 'Blog id 1 type', 'Blog id 1 Meta', 0);
-# INSERT INTO block (parent_id, child_id, content, type, meta, indent) VALUES (1, 3, 'Blog id 2 content', 'Blog id 2 type', 'Blog id 2 Meta', 0);
-# INSERT INTO block (parent_id, child_id, content, type, meta, indent) VALUES (2, 4, 'Blog id 3 content', 'Blog id 3 type', 'Blog id 3 Meta', 0);
+    
 class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     block_id = db.Column(db.Integer, nullable=True)
     title = db.Column(db.String(100), nullable=True)
-# INSERT INTO page (block_id, block_id) VALUES (1, 'Root Page title');
 
 @app.route('/blocks/<int:block_id>', methods=['PUT', 'DELETE'])
 def handle_block(block_id):
@@ -30,14 +27,14 @@ def handle_block(block_id):
     if not block:
         abort(404)
 
-    if request.method == 'PUT':
+    if request.method == 'PUT': # frontend send all block information
         data = request.json
         block.content = data['content']
         block.type = data['type']
         block.metadata = data.get('metadata', block.metadata)
         db.session.commit()
         return jsonify({'id': block.id})
-    elif request.method == 'DELETE':
+    elif request.method == 'DELETE': # frontend send, block id, page id
         delete_recursive(block_id)
         db.session.commit()
         return jsonify({}), 204
@@ -77,13 +74,13 @@ def handle_page_put_delete(page_id):
         response_data.extend(get_block_chain(page.block_id))
 
         return jsonify(response_data)
-    elif request.method == 'PUT':
+    elif request.method == 'PUT': # frontend send new title name
         data = request.json
         page.title = data['title']
         page.block_id = data['block_id']
         db.session.commit()
         return jsonify({'id': page.id})
-    elif request.method == 'DELETE':
+    elif request.method == 'DELETE': # frontend give id, recursive delete all data
         db.session.delete(page)
         db.session.commit()
         return jsonify({}), 204
@@ -92,3 +89,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
+
+
