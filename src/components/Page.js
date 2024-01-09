@@ -9,7 +9,6 @@ function Page() {
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
-                console.log('Data received:', response.data); // Debugging line
                 setPageData(response.data);
             })
             .catch(error => {
@@ -17,36 +16,50 @@ function Page() {
             });
     }, [id]);
 
-    const renderBlock = (block) => {
-        const createMarkup = (htmlContent) => {
-            return { __html: htmlContent };
+    const handleContentChange = (content, index) => {
+        // Here we update the content of the block in the pageData array
+        const updatedPageData = [...pageData];
+        updatedPageData[index].block_content = content;
+        setPageData(updatedPageData);
+
+        // This is where you would handle saving the updated content back to your server
+        // For example, using axios to send a PUT request
+    };
+
+    const renderBlock = (block, index) => {
+        const handleInput = (event) => {
+            handleContentChange(event.target.innerText, index + 1);
         };
-    
-        console.log(`Rendering block: ${block.block_content}, Type: ${block.block_type}`); // Debugging line
-    
-        switch (block.block_type) { // Make sure this matches the property name exactly
+
+        switch (block.block_type) {
             case 'header1':
-                return <h1 dangerouslySetInnerHTML={createMarkup(block.block_content)} />;
+                return <h1 onInput={handleInput} contentEditable>{block.block_content}</h1>;
             case 'header2':
-                return <h2 dangerouslySetInnerHTML={createMarkup(block.block_content)} />;
+                return <h2 onInput={handleInput} contentEditable>{block.block_content}</h2>;
             case 'header3':
-                return <h3 dangerouslySetInnerHTML={createMarkup(block.block_content)} />;
+                return <h3 onInput={handleInput} contentEditable>{block.block_content}</h3>;
             case 'text':
             default:
-                return <p dangerouslySetInnerHTML={createMarkup(block.block_content)} />;
+                return <p onInput={handleInput} contentEditable>{block.block_content}</p>;
         }
     };
-    
 
     return (
         <div className="page-content">
             {pageData ? (
                 <>
-                    <h2>{pageData[0].title}</h2>
+                    <div
+                        contentEditable
+                        onInput={(e) => handleContentChange(e.target.innerText, 0)}
+                        onBlur={(e) => {/* handle saving the title */}}
+                        suppressContentEditableWarning={true}
+                    >
+                        {pageData[0].page_title}
+                    </div>
                     <div className="blocks-container">
                         {pageData.slice(1).map((block, index) => (
-                            <div key={index} className="block">
-                                {renderBlock(block)}
+                            <div key={block.block_id} className="block">
+                                {renderBlock(block, index)}
                             </div>
                         ))}
                     </div>
