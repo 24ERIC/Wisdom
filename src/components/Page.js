@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 function Page() {
     const [pageData, setPageData] = useState(null);
     const { id } = useParams();
-    const focusedElementRef = useRef(null); // Ref to keep track of the focused element
+    const focusedElementRef = useRef(null);
 
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
@@ -16,6 +16,22 @@ function Page() {
                 console.error('Error fetching page:', error);
             });
     }, [id]);
+    const handleTitleChange = (content, element) => {
+        const caret = getCaretPosition(element);
+        const updatedPageData = [...pageData];
+        updatedPageData[0].page_title = content;
+        setPageData(updatedPageData);
+        setTimeout(() => setCaretPosition(element, caret), 0);
+        axios.put(`http://localhost:5000/pages/${id}`, {
+            title: content,
+        })
+        .then(response => {
+            console.log('Title Saved:', response.data);
+        })
+        .catch(error => {
+            console.error('Error saving title:', error);
+        });
+    };
 
     const getCaretPosition = (element) => {
         let caretOffset = 0;
@@ -50,14 +66,9 @@ function Page() {
         const updatedPageData = [...pageData];
         updatedPageData[index].block_content = content;
         setPageData(updatedPageData);
-    
-        // Restore caret position
         setTimeout(() => setCaretPosition(element, caret), 0);
-
-        // Debounce this PUT request or trigger it onBlur instead to reduce the number of requests
         axios.put(`http://localhost:5000/blocks/${updatedPageData[index].block_id}`, {
             content: content,
-            // include other block attributes if necessary
         })
         .then(response => {
             console.log('Saved:', response.data);
@@ -69,10 +80,9 @@ function Page() {
     
     const renderBlock = (block, index) => {
         const handleInput = (event) => {
-            focusedElementRef.current = event.target; // Update the focused element
+            focusedElementRef.current = event.target;
             handleContentChange(event.target.innerText, index + 1, event.target);
         };
-    
         const blockProps = {
             onInput: handleInput,
             contentEditable: true,
@@ -80,7 +90,6 @@ function Page() {
             className: `block block-${block.block_type}`,
             ref: index === 0 ? focusedElementRef : null,
         };
-    
         switch (block.block_type) {
             case 'header1':
                 return <h1 {...blockProps}>{block.block_content}</h1>;
@@ -96,29 +105,29 @@ function Page() {
     
     return (
         <div className="page-content">
-            {pageData ? (
-                <>
-                    <div
-                        contentEditable
-                        onInput={(e) => handleContentChange(e.target.innerText, 0, e.target)}
-                        onBlur={(e) => {/* handle saving the title */}}
-                        suppressContentEditableWarning={true}
-                        ref={focusedElementRef}
-                    >
-                        {pageData[0].page_title}
+    {pageData ? (
+        <>
+            <div
+                contentEditable
+                onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
+                onBlur={(e) => {/* handle saving the title */}}
+                suppressContentEditableWarning={true}
+                ref={focusedElementRef}
+            >
+                {pageData[0].page_title}
+            </div>
+            <div className="blocks-container">
+                {pageData.slice(1).map((block, index) => (
+                    <div key={block.block_id} className="block">
+                        {renderBlock(block, index)}
                     </div>
-                    <div className="blocks-container">
-                        {pageData.slice(1).map((block, index) => (
-                            <div key={block.block_id} className="block">
-                                {renderBlock(block, index)}
-                            </div>
-                        ))}
-                    </div>
-                </>
-            ) : (
-                <p>Loading page...</p>
-            )}
-        </div>
+                ))}
+            </div>
+        </>
+    ) : (
+        <p>Loading page...</p>
+    )}
+</div>
     );
 }
 
