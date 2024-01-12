@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 function Page() {
     const [pageData, setPageData] = useState(null);
     const { id } = useParams();
+    const focusedElementRef = useRef(null); // Ref to keep track of the focused element
 
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
@@ -16,11 +17,43 @@ function Page() {
             });
     }, [id]);
 
-    const handleContentChange = (content, index) => {
+    const getCaretPosition = (element) => {
+        let caretOffset = 0;
+        const doc = element.ownerDocument || element.document;
+        const win = doc.defaultView || doc.parentWindow;
+        let sel;
+        if (typeof win.getSelection != "undefined") {
+            sel = win.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = win.getSelection().getRangeAt(0);
+                const preCaretRange = range.cloneRange();
+                preCaretRange.selectNodeContents(element);
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                caretOffset = preCaretRange.toString().length;
+            }
+        }
+        return caretOffset;
+    };
+
+    const setCaretPosition = (element, offset) => {
+        let range = document.createRange();
+        let sel = window.getSelection();
+        range.setStart(element.childNodes[0], offset);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        element.focus();
+    };
+
+    const handleContentChange = (content, index, element) => {
+        const caret = getCaretPosition(element);
         const updatedPageData = [...pageData];
         updatedPageData[index].block_content = content;
         setPageData(updatedPageData);
     
+        // Restore caret position
+        setTimeout(() => setCaretPosition(element, caret), 0);
+
         // Debounce this PUT request or trigger it onBlur instead to reduce the number of requests
         axios.put(`http://localhost:5000/blocks/${updatedPageData[index].block_id}`, {
             content: content,
@@ -34,10 +67,10 @@ function Page() {
         });
     };
     
-
     const renderBlock = (block, index) => {
         const handleInput = (event) => {
-            handleContentChange(event.target.innerText, index + 1);
+            focusedElementRef.current = event.target; // Update the focused element
+            handleContentChange(event.target.innerText, index + 1, event.target);
         };
     
         const blockProps = {
@@ -45,6 +78,7 @@ function Page() {
             contentEditable: true,
             suppressContentEditableWarning: true,
             className: `block block-${block.block_type}`,
+            ref: index === 0 ? focusedElementRef : null,
         };
     
         switch (block.block_type) {
@@ -60,16 +94,16 @@ function Page() {
         }
     };
     
-
     return (
         <div className="page-content">
             {pageData ? (
                 <>
                     <div
                         contentEditable
-                        onInput={(e) => handleContentChange(e.target.innerText, 0)}
+                        onInput={(e) => handleContentChange(e.target.innerText, 0, e.target)}
                         onBlur={(e) => {/* handle saving the title */}}
                         suppressContentEditableWarning={true}
+                        ref={focusedElementRef}
                     >
                         {pageData[0].page_title}
                     </div>
