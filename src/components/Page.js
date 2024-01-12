@@ -25,12 +25,12 @@ function Page() {
         axios.put(`http://localhost:5000/pages/${id}`, {
             title: content,
         })
-        .then(response => {
-            console.log('Title Saved:', response.data);
-        })
-        .catch(error => {
-            console.error('Error saving title:', error);
-        });
+            .then(response => {
+                console.log('Title Saved:', response.data);
+            })
+            .catch(error => {
+                console.error('Error saving title:', error);
+            });
     };
 
     const getCaretPosition = (element) => {
@@ -70,64 +70,101 @@ function Page() {
         axios.put(`http://localhost:5000/blocks/${updatedPageData[index].block_id}`, {
             content: content,
         })
-        .then(response => {
-            console.log('Saved:', response.data);
-        })
-        .catch(error => {
-            console.error('Error saving block:', error);
+            .then(response => {
+                console.log('Saved:', response.data);
+            })
+            .catch(error => {
+                console.error('Error saving block:', error);
+            });
+    };
+
+    const renderBlocks = (blocks, indentLevel = 0) => {
+        return blocks.map((block, index) => {
+            const blockStyle = { marginLeft: `${indentLevel * 20}px` };
+            const key = `block-${block.block_id}`;
+    
+            // This function is now specific to the block being edited
+            const handleInput = (event) => {
+                focusedElementRef.current = event.target;
+                // Determine the actual index of the block within the pageData
+                const actualIndex = pageData.blocks.findIndex(b => b.block_id === block.block_id);
+                handleContentChange(event.target.innerText, actualIndex, event.target);
+            };
+    
+            const blockProps = {
+                onInput: handleInput,
+                contentEditable: true,
+                suppressContentEditableWarning: true,
+                className: `block block-${block.block_type}`,
+                style: blockStyle,
+            };
+    
+            const renderChildren = (children) => {
+                return children.map((child, childIndex) => {
+                    return (
+                        <li key={`child-${child.block_id}`} style={blockStyle}>
+                            <div
+                                {...blockProps}
+                                onBlur={(event) => handleContentChange(event.target.innerText, childIndex, event.target)}
+                            >
+                                {child.block_content}
+                            </div>
+                            {/* Recursively render nested children if they exist */}
+                            {child.children && child.children.length > 0 && (
+                                <ul>{renderChildren(child.children)}</ul>
+                            )}
+                        </li>
+                    );
+                });
+            };
+    
+            switch (block.block_type) {
+                case 'header1':
+                    return <h1 key={key} {...blockProps}>{block.block_content}</h1>;
+                case 'header2':
+                    return <h2 key={key} {...blockProps}>{block.block_content}</h2>;
+                case 'header3':
+                    return <h3 key={key} {...blockProps}>{block.block_content}</h3>;
+                case 'bullet-point':
+                    return (
+                        <ul key={key}>
+                            <li>
+                                <div {...blockProps}>
+                                    {block.block_content}
+                                </div>
+                            </li>
+                            {/* Render children as separate list items */}
+                            {block.children && <ul>{renderChildren(block.children)}</ul>}
+                        </ul>
+                    );
+                case 'text':
+                default:
+                    return <p key={key} {...blockProps}>{block.block_content}</p>;
+            }
         });
     };
-    
-    const renderBlock = (block, index) => {
-        const handleInput = (event) => {
-            focusedElementRef.current = event.target;
-            handleContentChange(event.target.innerText, index + 1, event.target);
-        };
-        const blockProps = {
-            onInput: handleInput,
-            contentEditable: true,
-            suppressContentEditableWarning: true,
-            className: `block block-${block.block_type}`,
-            ref: index === 0 ? focusedElementRef : null,
-        };
-        switch (block.block_type) {
-            case 'header1':
-                return <h1 {...blockProps}>{block.block_content}</h1>;
-            case 'header2':
-                return <h2 {...blockProps}>{block.block_content}</h2>;
-            case 'header3':
-                return <h3 {...blockProps}>{block.block_content}</h3>;
-            case 'text':
-            default:
-                return <p {...blockProps}>{block.block_content}</p>;
-        }
-    };
-    
+
     return (
         <div className="page-content">
-    {pageData ? (
-        <>
-            <div
-                contentEditable
-                onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
-                onBlur={(e) => {/* handle saving the title */}}
-                suppressContentEditableWarning={true}
-                ref={focusedElementRef}
-            >
-                {pageData[0].page_title}
-            </div>
-            <div className="blocks-container">
-                {pageData.slice(1).map((block, index) => (
-                    <div key={block.block_id} className="block">
-                        {renderBlock(block, index)}
+            {pageData ? (
+                <>
+                    <div
+                        contentEditable
+                        onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
+                        onBlur={(e) => {/* handle saving the title */ }}
+                        suppressContentEditableWarning={true}
+                        ref={focusedElementRef}
+                    >
+                        {pageData.page_title}
                     </div>
-                ))}
-            </div>
-        </>
-    ) : (
-        <p>Loading page...</p>
-    )}
-</div>
+                    <div className="blocks-container">
+                        {renderBlocks(pageData.blocks)} {/* Call renderBlocks here */}
+                    </div>
+                </>
+            ) : (
+                <p>Loading page...</p>
+            )}
+        </div>
     );
 }
 
