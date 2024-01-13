@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 function Page() {
-    // Initialize pageData as an object with default properties
     const [pageData, setPageData] = useState({ page_title: '', blocks: [] });
     const { id } = useParams();
     const focusedElementRef = useRef(null);
@@ -11,7 +10,6 @@ function Page() {
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
-                // Update the page data only if the response is in the expected format
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData(response.data);
                 } else {
@@ -25,7 +23,6 @@ function Page() {
 
     const handleTitleChange = (content, element) => {
         const caret = getCaretPosition(element);
-        // Directly update the page_title in the pageData object
         const updatedPageData = {
             ...pageData,
             page_title: content
@@ -76,8 +73,10 @@ function Page() {
         const caret = getCaretPosition(element);
         let updatedBlocks = [...pageData.blocks];
     
-        if (index >= 0 && index < updatedBlocks.length) {
-            updatedBlocks[index].block_content = content;
+        // Find the block by id rather than using the index
+        const blockIndex = updatedBlocks.findIndex(block => block.block_id === index);
+        if (blockIndex !== -1) {
+            updatedBlocks[blockIndex].block_content = content;
     
             const updatedPageData = {
                 ...pageData,
@@ -85,14 +84,17 @@ function Page() {
             };
             setPageData(updatedPageData);
     
-            setTimeout(() => {
-                if (element.childNodes[0] && caret <= element.childNodes[0].length) {
-                    setCaretPosition(element, caret);
-                }
-            }, 0);
-    
-            // Move the axios call inside the if block
-            axios.put(`http://localhost:5000/blocks/${updatedBlocks[index].block_id}`, {
+            // Ensure we set the caret position only if the element is still focused
+            if (document.activeElement === element) {
+                setTimeout(() => {
+                    if (element.childNodes[0] && caret <= element.childNodes[0].length) {
+                        setCaretPosition(element, caret);
+                    }
+                }, 0);
+            }
+
+            // Save the content after state update to prevent race conditions
+            axios.put(`http://localhost:5000/blocks/${updatedBlocks[blockIndex].block_id}`, {
                 content: content,
             })
             .then(response => {
@@ -103,20 +105,21 @@ function Page() {
             });
         }
     };
+    const handleInput = (event) => {
+        const blockId = event.target.getAttribute('data-block-id');
+        handleContentChange(event.target.innerText, blockId, event.target);
+    };
     
 
     const renderBlocks = (blocks, indentLevel = 0) => {
         if (!Array.isArray(blocks)) {
-            return null; // Handle the case when blocks is not an array
+            return null;
         }
         return blocks.map((block, index) => {
             const blockStyle = { marginLeft: `${indentLevel * 20}px` };
             const key = `block-${block.block_id}`;
-
-            // This function is now specific to the block being edited
             const handleInput = (event) => {
                 focusedElementRef.current = event.target;
-                // Determine the actual index of the block within the pageData
                 const actualIndex = pageData.blocks.findIndex(b => b.block_id === block.block_id);
                 handleContentChange(event.target.innerText, actualIndex, event.target);
             };
@@ -127,6 +130,7 @@ function Page() {
                 suppressContentEditableWarning: true,
                 className: `block block-${block.block_type}`,
                 style: blockStyle,
+                'data-block-id': block.block_id // Added data attribute for block id
             };
 
             const renderChildren = (children) => {
@@ -139,7 +143,6 @@ function Page() {
                             >
                                 {child.block_content}
                             </div>
-                            {/* Recursively render nested children if they exist */}
                             {child.children && child.children.length > 0 && (
                                 <ul>{renderChildren(child.children)}</ul>
                             )}
@@ -163,7 +166,6 @@ function Page() {
                                     {block.block_content}
                                 </div>
                             </li>
-                            {/* Render children as separate list items */}
                             {block.children && <ul>{renderChildren(block.children)}</ul>}
                         </ul>
                     );
@@ -188,7 +190,7 @@ function Page() {
                         {pageData.page_title}
                     </div>
                     <div className="blocks-container">
-                        {renderBlocks(pageData.blocks)} {/* Call renderBlocks here */}
+                        {renderBlocks(pageData.blocks)} 
                     </div>
                 </>
             ) : (
