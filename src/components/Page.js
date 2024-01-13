@@ -118,7 +118,6 @@ function Page() {
                 console.error('Error saving block:', error);
             });
     };
-
     const handleInput = async (event, blockPath) => {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -126,23 +125,16 @@ function Page() {
             const currentElement = event.target;
             const cursorPosition = getCaretPosition(currentElement);
             const fullContent = currentElement.innerText;
-            
             const currContent = fullContent.substring(0, cursorPosition);
             const newContent = fullContent.substring(cursorPosition);
-    
-            // Update the current block's content with currContent
             currentElement.innerText = currContent;
-    
             const currentBlockId = blockPath.split('/').pop();
     
             try {
-                // Send the current block content and the new block content to the backend
                 await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, {
                     currContent: currContent,
                     newContent: newContent
                 });
-    
-                // Request the updated page data from the backend
                 const response = await axios.get(`http://localhost:5000/pages/${id}`);
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData(response.data);

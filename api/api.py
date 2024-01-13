@@ -21,43 +21,29 @@ class Page(db.Model):
     block_id = db.Column(db.Integer)
     title = db.Column(db.String(100))
 
-
-
 @app.route('/blocks/<int:current_block_id>', methods=['POST'])
 def split_block(current_block_id):
     data = request.json
     curr_content = data.get('currContent')
     new_content = data.get('newContent')
-
-    # Fetch the original block
     original_block = Block.query.get(current_block_id)
     if not original_block:
         return jsonify({"error": "Block not found"}), 404
-
-    # Update the original block content
     original_block.content = curr_content
-
-    # Create a new block
     new_block = Block(
         parent_id=current_block_id,
         content=new_content,
-        type=original_block.type,  # Assuming new block has the same type
-        # Include other fields as needed
+        type=original_block.type,
     )
     db.session.add(new_block)
 
-    # If the original block had a child, update its parent ID to the new block
     if original_block.child_id:
         existing_child_block = Block.query.get(original_block.child_id)
         if existing_child_block:
             existing_child_block.parent_id = new_block.id
             new_block.child_id = original_block.child_id
-
-    # Update the original block's child ID to the new block's ID
     original_block.child_id = new_block.id
-
     db.session.commit()
-
     return jsonify(block_id=new_block.id), 201
 
 @app.route('/pages', methods=['POST'])
@@ -93,7 +79,7 @@ def delete_recursive(block_id):
     block = Block.query.get(block_id)
     if block.child_id:
         delete_recursive(block.child_id)
-    if block.list_child_id:  # Handle list_child_id
+    if block.list_child_id:
         delete_recursive(block.list_child_id)
     db.session.delete(block)
 
@@ -119,7 +105,6 @@ def handle_page_put_delete(page_id):
                     'children': []
                 }
 
-                # Get nested children (list_child_id)
                 if child_block.list_child_id:
                     block_data['children'] = get_block_children(child_block.list_child_id)
 
