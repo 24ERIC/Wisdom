@@ -34,9 +34,10 @@ def split_block(current_block_id):
         parent_id=current_block_id,
         content=new_content,
         type=original_block.type,
+        list_child_id=original_block.list_child_id
     )
     db.session.add(new_block)
-
+    original_block.list_child_id = None
     if original_block.child_id:
         existing_child_block = Block.query.get(original_block.child_id)
         if existing_child_block:
@@ -62,14 +63,12 @@ def handle_block(block_id):
     block = Block.query.get(block_id)
     if not block:
         abort(404)
-
     if request.method == 'PUT':
         data = request.json
         print(data)
         block.content = data.get('content')
         db.session.commit()
         return jsonify(block_id=block.id), 200
-
     elif request.method == 'DELETE':
         delete_recursive(block_id)
         db.session.commit()
@@ -88,7 +87,6 @@ def handle_page_put_delete(page_id):
     page = Page.query.get(page_id)
     if not page:
         abort(404)
-
     if request.method == 'GET':
         def get_block_children(block_id):
             children = []
@@ -96,7 +94,6 @@ def handle_page_put_delete(page_id):
                 child_block = Block.query.get(block_id)
                 if child_block is None:
                     break
-
                 block_data = {
                     'block_id': child_block.id,
                     'block_content': child_block.content,
@@ -104,31 +101,22 @@ def handle_page_put_delete(page_id):
                     'block_meta': child_block.meta,
                     'children': []
                 }
-
                 if child_block.list_child_id:
                     block_data['children'] = get_block_children(child_block.list_child_id)
-
                 children.append(block_data)
                 block_id = child_block.child_id
-
             return children
-
         page_data = {
             'page_id': page.id,
             'page_title': page.title,
             'blocks': get_block_children(page.block_id)
         }
-
         return jsonify(page_data)
-
-
-
     elif request.method == 'PUT':
         data = request.json
         page.title = data.get('title')
         db.session.commit()
         return jsonify(page_id=page.id), 200
-
     elif request.method == 'DELETE':
         if page.block_id:
             delete_recursive(page.block_id)

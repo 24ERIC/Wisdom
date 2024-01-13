@@ -163,9 +163,13 @@ function Page() {
             const blockStyle = { marginLeft: `${block.indentLevel * 20}px` };
             const key = `block-${blockPath}`;
 
+            const handleKeyDown = (e) => handleInput(e, blockPath);
+            const handleBlockInput = (e) => handleContentChange(e.target.innerText, blockPath, e.target);
+    
+
             const blockProps = {
-                onInput: handleInput,
-                onKeyDown: (e) => handleInput(e, blockPath),
+                onInput: handleBlockInput,
+                onKeyDown: handleKeyDown,
                 contentEditable: true,
                 suppressContentEditableWarning: true,
                 className: `block block-${block.block_type}`,
