@@ -7,6 +7,8 @@ function Page() {
     const [allBlockIds, setAllBlockIds] = useState([]);
     const { id } = useParams();
     const focusedElementRef = useRef(null);
+    const [newBlockId, setNewBlockId] = useState(null);
+
 
     const extractBlockIds = (blocks) => {
         return blocks.reduce((acc, block) => {
@@ -33,15 +35,18 @@ function Page() {
             });
     }, [id]);
 
+    
     useEffect(() => {
-        if (pageData.newBlockId) {
-            const newBlockElement = document.querySelector(`[data-block-id='${pageData.newBlockId}']`);
+        if (newBlockId) {
+            const newBlockElement = document.querySelector(`[data-block-id='${newBlockId}']`);
             if (newBlockElement) {
                 newBlockElement.focus();
-                setCaretPosition(newBlockElement, newBlockElement.innerText.length);
+                setCaretPosition(newBlockElement, 0);
             }
+            setNewBlockId(null);
         }
-    });
+    }, [newBlockId]);
+    
 
     const getCaretPosition = (element) => {
         let caretOffset = 0;
@@ -127,7 +132,6 @@ function Page() {
     };
 
     const handleInput = async (event, blockIdWithChildren) => {
-        console.log("allBlockIds", allBlockIds);
         if (event.key === 'Enter') {
             event.preventDefault();
             const currentElement = event.target;
@@ -150,6 +154,8 @@ function Page() {
                         ...response.data,
                         newBlockId: newBlockId,
                     });
+                    setPageData(response.data);
+                    setNewBlockId(newBlockId);
                     setTimeout(() => {
                         const newBlockElement = document.querySelector(`[data-block-id='${newBlockId}']`);
                         if (newBlockElement) {
