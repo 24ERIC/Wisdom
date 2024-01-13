@@ -66,18 +66,16 @@ function Page() {
 
             element.appendChild(document.createTextNode(''));
         }
-    
+
         let range = document.createRange();
         let sel = window.getSelection();
         range.setStart(element.childNodes[0], offset);
         range.collapse(true);
-    
+
         sel.removeAllRanges();
         sel.addRange(range);
         element.focus();
     };
-    
-    
 
     const handleTitleChange = (content, element) => {
         const caret = getCaretPosition(element);
@@ -87,7 +85,6 @@ function Page() {
         };
         setPageData(updatedPageData);
         setTimeout(() => setCaretPosition(element, caret), 0);
-
         axios.put(`http://localhost:5000/pages/${id}`, { title: content })
             .then(response => {
                 console.log('Title Saved:', response.data);
@@ -101,28 +98,22 @@ function Page() {
         const [blockId, childIds] = blockIdWithChildren;
         const blockIndex = blocks.findIndex(block => block.block_id === blockId);
         if (blockIndex === -1) return blocks;
-
         blocks[blockIndex].block_content = newContent;
-
         if (childIds && Array.isArray(childIds) && childIds.length > 0) {
             blocks[blockIndex].children = updateBlockById(blocks[blockIndex].children || [], childIds, newContent);
         }
-
         return blocks;
     };
 
     const handleContentChange = (content, blockIdWithChildren, element) => {
         const caret = getCaretPosition(element);
         let updatedBlocks = updateBlockById([...pageData.blocks], blockIdWithChildren, content);
-
         setPageData(prevPageData => {
             const newPageData = { ...prevPageData, blocks: updatedBlocks };
             setAllBlockIds(extractBlockIds(newPageData.blocks));
             return newPageData;
         });
-
         setTimeout(() => setCaretPosition(element, caret), 0);
-
         const blockId = blockIdWithChildren[0];
         axios.put(`http://localhost:5000/blocks/${blockId}`, {
             content: content,
@@ -134,38 +125,31 @@ function Page() {
                 console.error('Error saving block:', error);
             });
     };
+
     const handleInput = async (event, blockIdWithChildren) => {
         console.log("allBlockIds", allBlockIds);
         if (event.key === 'Enter') {
             event.preventDefault();
-    
             const currentElement = event.target;
             const cursorPosition = getCaretPosition(currentElement);
             const fullContent = currentElement.innerText;
             const currContent = fullContent.substring(0, cursorPosition);
             const newContent = fullContent.substring(cursorPosition).trim();
-    
-            // Update the current block with the current content
             currentElement.innerText = currContent;
-    
-            // Prepare data for new block
             const currentBlockId = blockIdWithChildren[0];
             const newBlockData = {
                 currContent: currContent,
-                newContent: newContent // This can be an empty string
+                newContent: newContent
             };
-    
             try {
                 const response1 = await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, newBlockData);
                 const newBlockId = response1.data.block_id;
-                
                 const response = await axios.get(`http://localhost:5000/pages/${id}`);
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData({
                         ...response.data,
                         newBlockId: newBlockId,
                     });
-    
                     setTimeout(() => {
                         const newBlockElement = document.querySelector(`[data-block-id='${newBlockId}']`);
                         if (newBlockElement) {
@@ -186,16 +170,13 @@ function Page() {
             handleContentChange(event.target.innerText, blockIdWithChildren, event.target);
         }
     };
-    
 
     const handleArrowNavigation = (event, currentBlockId) => {
         const currentIndex = allBlockIds.indexOf(currentBlockId);
-        if (currentIndex === -1) return; // Current block ID not found
-    
+        if (currentIndex === -1) return;
         const currentElement = document.querySelector(`[data-block-id='${currentBlockId}']`);
         const caretPos = getCaretPosition(currentElement);
         const textLength = currentElement.innerText.length;
-    
         let nextIndex;
         switch (event.key) {
             case 'ArrowUp':
@@ -221,10 +202,10 @@ function Page() {
             default:
                 return;
         }
-    
+
         focusOnBlock(nextIndex);
     };
-    
+
     const focusOnBlock = (index, focusAtEnd = false) => {
         if (index >= 0 && index < allBlockIds.length) {
             const nextBlockId = allBlockIds[index];
@@ -232,29 +213,23 @@ function Page() {
             if (nextBlockElement) {
                 nextBlockElement.focus();
                 const position = focusAtEnd ? nextBlockElement.innerText.length : 0;
-                console.log("position",position);
+                console.log("position", position);
                 setCaretPosition(nextBlockElement, position);
             }
         }
     };
-    
-    
-
 
     const renderBlocks = (blocks, parentBlockIdList = []) => {
         if (!Array.isArray(blocks)) {
             return null;
         }
-
         return blocks.map((block, index) => {
             const blockIdWithChildren = [block.block_id, block.children ? block.children.map(child => child.block_id) : []];
             const newParentBlockIdList = [...parentBlockIdList, blockIdWithChildren];
             const blockStyle = { marginLeft: `${block.indentLevel * 20}px` };
             const key = `block-${block.block_id}-${index}`;
-
             const handleKeyDown = (e) => handleInput(e, blockIdWithChildren);
             const handleBlockInput = (e) => handleContentChange(e.target.innerText, blockIdWithChildren, e.target);
-
             const blockProps = {
                 onInput: handleBlockInput,
                 onKeyDown: handleKeyDown,
@@ -264,11 +239,9 @@ function Page() {
                 style: blockStyle,
                 'data-block-id': block.block_id
             };
-
             const renderChildren = (children) => {
                 return children && children.length > 0 ? renderBlocks(children, newParentBlockIdList) : null;
             };
-
             switch (block.block_type) {
                 case 'header1':
                     return <h1 key={key} {...blockProps}>{block.block_content}</h1>;
