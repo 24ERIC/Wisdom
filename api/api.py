@@ -57,10 +57,8 @@ def handle_block(block_id):
 
     if request.method == 'PUT':
         data = request.json
+        print(data)
         block.content = data.get('content')
-        block.type = data.get('type')
-        block.meta = data.get('meta')
-        # Removed indent
         db.session.commit()
         return jsonify(block_id=block.id), 200
 

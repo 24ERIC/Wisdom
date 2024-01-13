@@ -69,12 +69,13 @@ function Page() {
         sel.addRange(range);
         element.focus();
     };
-    const handleContentChange = (content, index, element) => {
+    
+    const handleContentChange = (content, blockId, element) => {
         const caret = getCaretPosition(element);
         let updatedBlocks = [...pageData.blocks];
     
-        // Find the block by id rather than using the index
-        const blockIndex = updatedBlocks.findIndex(block => block.block_id === index);
+        // Find the block by its unique block_id
+        const blockIndex = updatedBlocks.findIndex(block => block.block_id === blockId);
         if (blockIndex !== -1) {
             updatedBlocks[blockIndex].block_content = content;
     
@@ -92,9 +93,10 @@ function Page() {
                     }
                 }, 0);
             }
-
+    
             // Save the content after state update to prevent race conditions
-            axios.put(`http://localhost:5000/blocks/${updatedBlocks[blockIndex].block_id}`, {
+            console.log("before send to backend block update date,  ", content);
+            axios.put(`http://localhost:5000/blocks/${blockId+1}`, {
                 content: content,
             })
             .then(response => {
@@ -105,10 +107,7 @@ function Page() {
             });
         }
     };
-    const handleInput = (event) => {
-        const blockId = event.target.getAttribute('data-block-id');
-        handleContentChange(event.target.innerText, blockId, event.target);
-    };
+    
     
 
     const renderBlocks = (blocks, indentLevel = 0) => {
