@@ -23,6 +23,17 @@ function Page() {
             });
     }, [id]);
 
+    useEffect(() => {
+        console.log('pageData updated:', pageData);
+        if (pageData.newBlockId) {
+            const newBlockElement = document.querySelector(`[data-block-id='${pageData.newBlockId}']`);
+            if (newBlockElement) {
+                newBlockElement.focus();
+                setCaretPosition(newBlockElement, newBlockElement.innerText.length);
+            }
+        }
+    }, [pageData]);
+    
     const getCaretPosition = (element) => {
         let caretOffset = 0;
         const doc = element.ownerDocument || element.document;
@@ -121,7 +132,7 @@ function Page() {
     const handleInput = async (event, blockPath) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-    
+
             const currentElement = event.target;
             const cursorPosition = getCaretPosition(currentElement);
             const fullContent = currentElement.innerText;
@@ -129,15 +140,21 @@ function Page() {
             const newContent = fullContent.substring(cursorPosition);
             currentElement.innerText = currContent;
             const currentBlockId = blockPath.split('/').pop();
-    
+
             try {
-                await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, {
+                const response1 = await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, {
                     currContent: currContent,
                     newContent: newContent
                 });
                 const response = await axios.get(`http://localhost:5000/pages/${id}`);
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
-                    setPageData(response.data);
+                    const newBlockId = response1.data.block_id; // Get the ID of the new block
+                    console.log("response1",response1);
+                    console.log("newBlockId",newBlockId);
+                    setPageData({
+                        ...response.data,
+                        newBlockId: newBlockId, // Include the ID of the new block in your state
+                    });
                 } else {
                     console.error('Invalid format of fetched data');
                 }
@@ -149,10 +166,10 @@ function Page() {
             handleContentChange(event.target.innerText, blockPath, event.target);
         }
     };
-    
-    
-    
-    
+
+
+
+
     const renderBlocks = (blocks, path = '') => {
         if (!Array.isArray(blocks)) {
             return null;
@@ -165,7 +182,7 @@ function Page() {
 
             const handleKeyDown = (e) => handleInput(e, blockPath);
             const handleBlockInput = (e) => handleContentChange(e.target.innerText, blockPath, e.target);
-    
+
 
             const blockProps = {
                 onInput: handleBlockInput,
