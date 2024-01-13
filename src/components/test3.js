@@ -170,11 +170,8 @@ function Page() {
 
     const handleArrowNavigation = (event, currentBlockId) => {
         const currentIndex = allBlockIds.indexOf(currentBlockId);
-        if (currentIndex === -1) return; // Current block ID not found
     
-        const currentElement = document.querySelector(`[data-block-id='${currentBlockId}']`);
-        const caretPos = getCaretPosition(currentElement);
-        const textLength = currentElement.innerText.length;
+        if (currentIndex === -1) return; // Current block ID not found
     
         let nextIndex;
         switch (event.key) {
@@ -185,37 +182,21 @@ function Page() {
                 nextIndex = currentIndex + 1;
                 break;
             case 'ArrowLeft':
-                if (caretPos === 0) {
-                    nextIndex = currentIndex - 1;
-                    focusOnBlock(nextIndex, true);
-                }
-                return;
             case 'ArrowRight':
-                if (caretPos === textLength) {
-                    nextIndex = currentIndex + 1;
-                    focusOnBlock(nextIndex, false);
-                }
+                // For left/right, you can either ignore or handle differently if needed
                 return;
             default:
                 return;
         }
     
-        focusOnBlock(nextIndex);
-    };
-    
-    const focusOnBlock = (index, focusAtEnd = false) => {
-        if (index >= 0 && index < allBlockIds.length) {
-            const nextBlockId = allBlockIds[index];
+        if (nextIndex >= 0 && nextIndex < allBlockIds.length) {
+            const nextBlockId = allBlockIds[nextIndex];
             const nextBlockElement = document.querySelector(`[data-block-id='${nextBlockId}']`);
             if (nextBlockElement) {
                 nextBlockElement.focus();
-                const position = focusAtEnd ? nextBlockElement.innerText.length-1 : 1;
-                console.log("position",position);
-                setCaretPosition(nextBlockElement, position);
             }
         }
     };
-    
     
 
 
