@@ -64,12 +64,14 @@ function Page() {
     const setCaretPosition = (element, offset) => {
         let range = document.createRange();
         let sel = window.getSelection();
-        range.setStart(element.childNodes[0], offset);
+        console.log(range);
+        range.setStart(element.childNodes[0], offset-1);
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
         element.focus();
     };
+    
 
     const handleTitleChange = (content, element) => {
         const caret = getCaretPosition(element);
@@ -209,7 +211,7 @@ function Page() {
             const nextBlockElement = document.querySelector(`[data-block-id='${nextBlockId}']`);
             if (nextBlockElement) {
                 nextBlockElement.focus();
-                const position = focusAtEnd ? nextBlockElement.innerText.length-1 : 1;
+                const position = focusAtEnd ? nextBlockElement.innerText.length : 0;
                 console.log("position",position);
                 setCaretPosition(nextBlockElement, position);
             }
