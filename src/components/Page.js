@@ -8,6 +8,7 @@ function Page() {
     const { id } = useParams();
     const focusedElementRef = useRef(null);
     const [newBlockId, setNewBlockId] = useState(null);
+    const PLACEHOLDER_TEXT = "Press 'space' for AI, \"\/\" for commands...";
 
 
     const extractBlockIds = (blocks) => {
@@ -35,7 +36,7 @@ function Page() {
             });
     }, [id]);
 
-    
+
     useEffect(() => {
         if (newBlockId) {
             const newBlockElement = document.querySelector(`[data-block-id='${newBlockId}']`);
@@ -46,7 +47,19 @@ function Page() {
             setNewBlockId(null);
         }
     }, [newBlockId]);
+
+
+    const handlePlaceholder = (element) => {
+        if (!element.innerText.trim() && !document.activeElement.isSameNode(element)) {
+            element.innerText = PLACEHOLDER_TEXT;
+            element.classList.add("placeholder-style");
+        } else if (element.innerText === PLACEHOLDER_TEXT && !document.activeElement.isSameNode(element)) {
+            element.innerText = '';
+            element.classList.remove("placeholder-style");
+        }
+    };
     
+
 
     const getCaretPosition = (element) => {
         let caretOffset = 0;
@@ -68,8 +81,8 @@ function Page() {
 
     const setCaretPosition = (element, offset) => {
         if (element.childNodes.length === 0) {
-
-            element.appendChild(document.createTextNode(''));
+            element.appendChild(document.createTextNode(PLACEHOLDER_TEXT)); // Add placeholder text if empty
+            element.classList.add("placeholder-style");
         }
 
         let range = document.createRange();
@@ -119,6 +132,7 @@ function Page() {
             return newPageData;
         });
         setTimeout(() => setCaretPosition(element, caret), 0);
+        handlePlaceholder(element);
         const blockId = blockIdWithChildren[0];
         axios.put(`http://localhost:5000/blocks/${blockId}`, {
             content: content,
@@ -132,9 +146,13 @@ function Page() {
     };
 
     const handleInput = async (event, blockIdWithChildren) => {
+        const currentElement = event.target;
+        if (currentElement.innerText === PLACEHOLDER_TEXT && event.key !== 'Enter') {
+            currentElement.innerText = '';
+            currentElement.classList.remove("placeholder-style");
+        }
         if (event.key === 'Enter') {
             event.preventDefault();
-            const currentElement = event.target;
             const cursorPosition = getCaretPosition(currentElement);
             const fullContent = currentElement.innerText;
             const currContent = fullContent.substring(0, cursorPosition);
@@ -237,6 +255,8 @@ function Page() {
             const handleKeyDown = (e) => handleInput(e, blockIdWithChildren);
             const handleBlockInput = (e) => handleContentChange(e.target.innerText, blockIdWithChildren, e.target);
             const blockProps = {
+                onFocus: (e) => handlePlaceholder(e.target),
+                onBlur: (e) => handlePlaceholder(e.target),
                 onInput: handleBlockInput,
                 onKeyDown: handleKeyDown,
                 contentEditable: true,
