@@ -37,6 +37,7 @@ def split_block(current_block_id):
         list_child_id=original_block.list_child_id
     )
     db.session.add(new_block)
+    db.session.commit()
     original_block.list_child_id = None
     if original_block.child_id:
         existing_child_block = Block.query.get(original_block.child_id)
