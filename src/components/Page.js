@@ -24,7 +24,6 @@ function Page() {
     }, [id]);
 
     useEffect(() => {
-        console.log('pageData updated:', pageData);
         if (pageData.newBlockId) {
             const newBlockElement = document.querySelector(`[data-block-id='${pageData.newBlockId}']`);
             if (newBlockElement) {
@@ -32,7 +31,7 @@ function Page() {
                 setCaretPosition(newBlockElement, newBlockElement.innerText.length);
             }
         }
-    }, [pageData]);
+    });
     
     const getCaretPosition = (element) => {
         let caretOffset = 0;
