@@ -62,15 +62,21 @@ function Page() {
     };
 
     const setCaretPosition = (element, offset) => {
+        if (element.childNodes.length === 0) {
+
+            element.appendChild(document.createTextNode(''));
+        }
+    
         let range = document.createRange();
         let sel = window.getSelection();
-        console.log(range);
         range.setStart(element.childNodes[0], offset);
         range.collapse(true);
+    
         sel.removeAllRanges();
         sel.addRange(range);
         element.focus();
     };
+    
     
 
     const handleTitleChange = (content, element) => {
@@ -128,34 +134,45 @@ function Page() {
                 console.error('Error saving block:', error);
             });
     };
-
     const handleInput = async (event, blockIdWithChildren) => {
-        console.log("allBlockIds",allBlockIds);
+        console.log("allBlockIds", allBlockIds);
         if (event.key === 'Enter') {
             event.preventDefault();
-
+    
             const currentElement = event.target;
             const cursorPosition = getCaretPosition(currentElement);
             const fullContent = currentElement.innerText;
             const currContent = fullContent.substring(0, cursorPosition);
-            const newContent = fullContent.substring(cursorPosition);
+            const newContent = fullContent.substring(cursorPosition).trim();
+    
+            // Update the current block with the current content
             currentElement.innerText = currContent;
+    
+            // Prepare data for new block
             const currentBlockId = blockIdWithChildren[0];
-
+            const newBlockData = {
+                currContent: currContent,
+                newContent: newContent // This can be an empty string
+            };
+    
             try {
-                const response1 = await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, {
-                    currContent: currContent,
-                    newContent: newContent
-                });
+                const response1 = await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, newBlockData);
+                const newBlockId = response1.data.block_id;
+                
                 const response = await axios.get(`http://localhost:5000/pages/${id}`);
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
-                    const newBlockId = response1.data.block_id;
-                    console.log("response1", response1);
-                    console.log("newBlockId", newBlockId);
                     setPageData({
                         ...response.data,
                         newBlockId: newBlockId,
                     });
+    
+                    setTimeout(() => {
+                        const newBlockElement = document.querySelector(`[data-block-id='${newBlockId}']`);
+                        if (newBlockElement) {
+                            newBlockElement.focus();
+                            setCaretPosition(newBlockElement, 0);
+                        }
+                    }, 0);
                 } else {
                     console.error('Invalid format of fetched data');
                 }
@@ -169,6 +186,7 @@ function Page() {
             handleContentChange(event.target.innerText, blockIdWithChildren, event.target);
         }
     };
+    
 
     const handleArrowNavigation = (event, currentBlockId) => {
         const currentIndex = allBlockIds.indexOf(currentBlockId);
