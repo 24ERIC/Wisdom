@@ -119,6 +119,48 @@ function Page() {
             });
     };
 
+    const handleInput = async (event, blockPath) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+    
+            const currentElement = event.target;
+            const cursorPosition = getCaretPosition(currentElement);
+            const fullContent = currentElement.innerText;
+            
+            const currContent = fullContent.substring(0, cursorPosition);
+            const newContent = fullContent.substring(cursorPosition);
+    
+            // Update the current block's content with currContent
+            currentElement.innerText = currContent;
+    
+            const currentBlockId = blockPath.split('/').pop();
+    
+            try {
+                // Send the current block content and the new block content to the backend
+                await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, {
+                    currContent: currContent,
+                    newContent: newContent
+                });
+    
+                // Request the updated page data from the backend
+                const response = await axios.get(`http://localhost:5000/pages/${id}`);
+                if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
+                    setPageData(response.data);
+                } else {
+                    console.error('Invalid format of fetched data');
+                }
+            } catch (error) {
+                console.error('Error processing new block creation:', error);
+            }
+        } else {
+            focusedElementRef.current = event.target;
+            handleContentChange(event.target.innerText, blockPath, event.target);
+        }
+    };
+    
+    
+    
+    
     const renderBlocks = (blocks, path = '') => {
         if (!Array.isArray(blocks)) {
             return null;
@@ -129,13 +171,9 @@ function Page() {
             const blockStyle = { marginLeft: `${block.indentLevel * 20}px` };
             const key = `block-${blockPath}`;
 
-            const handleInput = (event) => {
-                focusedElementRef.current = event.target;
-                handleContentChange(event.target.innerText, blockPath, event.target);
-            };
-
             const blockProps = {
                 onInput: handleInput,
+                onKeyDown: (e) => handleInput(e, blockPath),
                 contentEditable: true,
                 suppressContentEditableWarning: true,
                 className: `block block-${block.block_type}`,

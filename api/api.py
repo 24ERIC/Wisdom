@@ -23,19 +23,41 @@ class Page(db.Model):
 
 
 
-@app.route('/blocks', methods=['POST'])
-def create_block():
+@app.route('/blocks/<int:current_block_id>', methods=['POST'])
+def split_block(current_block_id):
     data = request.json
+    curr_content = data.get('currContent')
+    new_content = data.get('newContent')
+
+    # Fetch the original block
+    original_block = Block.query.get(current_block_id)
+    if not original_block:
+        return jsonify({"error": "Block not found"}), 404
+
+    # Update the original block content
+    original_block.content = curr_content
+
+    # Create a new block
     new_block = Block(
-        parent_id=data.get('parent_id'),
-        child_id=data.get('child_id'),
-        list_child_id=data.get('list_child_id'),
-        content=data.get('content'),
-        type=data.get('type'),
-        meta=data.get('meta')
+        parent_id=current_block_id,
+        content=new_content,
+        type=original_block.type,  # Assuming new block has the same type
+        # Include other fields as needed
     )
     db.session.add(new_block)
+
+    # If the original block had a child, update its parent ID to the new block
+    if original_block.child_id:
+        existing_child_block = Block.query.get(original_block.child_id)
+        if existing_child_block:
+            existing_child_block.parent_id = new_block.id
+            new_block.child_id = original_block.child_id
+
+    # Update the original block's child ID to the new block's ID
+    original_block.child_id = new_block.id
+
     db.session.commit()
+
     return jsonify(block_id=new_block.id), 201
 
 @app.route('/pages', methods=['POST'])
