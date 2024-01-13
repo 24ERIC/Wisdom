@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
@@ -20,27 +22,6 @@ function Page() {
                 console.error('Error fetching page:', error);
             });
     }, [id]);
-
-    const handleTitleChange = (content, element) => {
-        const caret = getCaretPosition(element);
-        const updatedPageData = {
-            ...pageData,
-            page_title: content
-        };
-        setPageData(updatedPageData);
-        setTimeout(() => setCaretPosition(element, caret), 0);
-
-
-        axios.put(`http://localhost:5000/pages/${id}`, {
-            title: content,
-        })
-            .then(response => {
-                console.log('Title Saved:', response.data);
-            })
-            .catch(error => {
-                console.error('Error saving title:', error);
-            });
-    };
 
     const getCaretPosition = (element) => {
         let caretOffset = 0;
@@ -69,58 +50,88 @@ function Page() {
         sel.addRange(range);
         element.focus();
     };
-    
-    const handleContentChange = (content, blockId, element) => {
+
+
+    const handleTitleChange = (content, element) => {
         const caret = getCaretPosition(element);
-        let updatedBlocks = [...pageData.blocks];
-    
-        // Find the block by its unique block_id
-        const blockIndex = updatedBlocks.findIndex(block => block.block_id === blockId);
-        if (blockIndex !== -1) {
-            updatedBlocks[blockIndex].block_content = content;
-    
-            const updatedPageData = {
-                ...pageData,
-                blocks: updatedBlocks
-            };
-            setPageData(updatedPageData);
-    
-            // Ensure we set the caret position only if the element is still focused
-            if (document.activeElement === element) {
-                setTimeout(() => {
-                    if (element.childNodes[0] && caret <= element.childNodes[0].length) {
-                        setCaretPosition(element, caret);
-                    }
-                }, 0);
-            }
-    
-            // Save the content after state update to prevent race conditions
-            console.log("before send to backend block update date,  ", content);
-            axios.put(`http://localhost:5000/blocks/${blockId+1}`, {
-                content: content,
+        const updatedPageData = {
+            ...pageData,
+            page_title: content
+        };
+        setPageData(updatedPageData);
+        setTimeout(() => setCaretPosition(element, caret), 0);
+
+
+        axios.put(`http://localhost:5000/pages/${id}`, {
+            title: content,
+        })
+            .then(response => {
+                console.log('Title Saved:', response.data);
             })
+            .catch(error => {
+                console.error('Error saving title:', error);
+            });
+    };
+
+
+
+    const updateBlockByPath = (blocks, path, newContent) => {
+        const ids = path.split('/').filter(Boolean);
+        let currentBlocks = blocks;
+
+        ids.forEach((id, index) => {
+            const blockIndex = currentBlocks.findIndex(block => block.block_id === id);
+            if (blockIndex === -1) return;
+
+            if (index === ids.length - 1) {
+                currentBlocks[blockIndex].block_content = newContent;
+            } else {
+                if (!currentBlocks[blockIndex].children) {
+                    currentBlocks[blockIndex].children = [];
+                }
+                currentBlocks = currentBlocks[blockIndex].children;
+            }
+        });
+
+        return blocks;
+    };
+
+    const handleContentChange = (content, blockPath, element) => {
+        const caret = getCaretPosition(element);
+        let updatedBlocks = updateBlockByPath([...pageData.blocks], blockPath, content);
+
+        setPageData(prevPageData => ({
+            ...prevPageData,
+            blocks: updatedBlocks,
+        }));
+
+        setTimeout(() => setCaretPosition(element, caret), 0);
+
+        const blockId = blockPath.split('/').pop();
+        axios.put(`http://localhost:5000/blocks/${blockId}`, {
+            content: content,
+        })
             .then(response => {
                 console.log('Saved:', response.data);
             })
             .catch(error => {
                 console.error('Error saving block:', error);
             });
-        }
     };
-    
-    
 
-    const renderBlocks = (blocks, indentLevel = 0) => {
+    const renderBlocks = (blocks, path = '') => {
         if (!Array.isArray(blocks)) {
             return null;
         }
+
         return blocks.map((block, index) => {
-            const blockStyle = { marginLeft: `${indentLevel * 20}px` };
-            const key = `block-${block.block_id}`;
+            const blockPath = `${path}/${block.block_id}`;
+            const blockStyle = { marginLeft: `${block.indentLevel * 20}px` };
+            const key = `block-${blockPath}`;
+
             const handleInput = (event) => {
                 focusedElementRef.current = event.target;
-                const actualIndex = pageData.blocks.findIndex(b => b.block_id === block.block_id);
-                handleContentChange(event.target.innerText, actualIndex, event.target);
+                handleContentChange(event.target.innerText, blockPath, event.target);
             };
 
             const blockProps = {
@@ -129,25 +140,11 @@ function Page() {
                 suppressContentEditableWarning: true,
                 className: `block block-${block.block_type}`,
                 style: blockStyle,
-                'data-block-id': block.block_id // Added data attribute for block id
+                'data-block-id': block.block_id
             };
 
             const renderChildren = (children) => {
-                return children.map((child, childIndex) => {
-                    return (
-                        <li key={`child-${child.block_id}`} style={blockStyle}>
-                            <div
-                                {...blockProps}
-                                onBlur={(event) => handleContentChange(event.target.innerText, childIndex, event.target)}
-                            >
-                                {child.block_content}
-                            </div>
-                            {child.children && child.children.length > 0 && (
-                                <ul>{renderChildren(child.children)}</ul>
-                            )}
-                        </li>
-                    );
-                });
+                return children && children.length > 0 ? renderBlocks(children, blockPath) : null;
             };
 
             switch (block.block_type) {
@@ -159,13 +156,13 @@ function Page() {
                     return <h3 key={key} {...blockProps}>{block.block_content}</h3>;
                 case 'bullet-point':
                     return (
-                        <ul key={key}>
+                        <ul key={key} style={blockStyle}>
                             <li>
                                 <div {...blockProps}>
                                     {block.block_content}
                                 </div>
+                                {renderChildren(block.children)}
                             </li>
-                            {block.children && <ul>{renderChildren(block.children)}</ul>}
                         </ul>
                     );
                 case 'text':
@@ -182,14 +179,13 @@ function Page() {
                     <div
                         contentEditable
                         onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
-                        onBlur={(e) => {/* handle saving the title */ }}
                         suppressContentEditableWarning={true}
                         ref={focusedElementRef}
                     >
                         {pageData.page_title}
                     </div>
                     <div className="blocks-container">
-                        {renderBlocks(pageData.blocks)} 
+                        {renderBlocks(pageData.blocks)}
                     </div>
                 </>
             ) : (
