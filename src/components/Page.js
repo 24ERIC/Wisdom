@@ -4,14 +4,26 @@ import { useParams } from 'react-router-dom';
 
 function Page() {
     const [pageData, setPageData] = useState({ page_title: '', blocks: [] });
+    const [allBlockIds, setAllBlockIds] = useState([]);
     const { id } = useParams();
     const focusedElementRef = useRef(null);
+
+    const extractBlockIds = (blocks) => {
+        return blocks.reduce((acc, block) => {
+            acc.push(block.block_id);
+            if (block.children && block.children.length > 0) {
+                acc.push(...extractBlockIds(block.children));
+            }
+            return acc;
+        }, []);
+    };
 
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData(response.data);
+                    setAllBlockIds(extractBlockIds(response.data.blocks));
                 } else {
                     console.error('Invalid format of fetched data');
                 }
@@ -95,14 +107,15 @@ function Page() {
         const caret = getCaretPosition(element);
         let updatedBlocks = updateBlockById([...pageData.blocks], blockIdWithChildren, content);
 
-        setPageData(prevPageData => ({
-            ...prevPageData,
-            blocks: updatedBlocks,
-        }));
+        setPageData(prevPageData => {
+            const newPageData = { ...prevPageData, blocks: updatedBlocks };
+            setAllBlockIds(extractBlockIds(newPageData.blocks));
+            return newPageData;
+        });
 
         setTimeout(() => setCaretPosition(element, caret), 0);
 
-        const blockId = blockIdWithChildren[0]; // Get the top-level block ID
+        const blockId = blockIdWithChildren[0];
         axios.put(`http://localhost:5000/blocks/${blockId}`, {
             content: content,
         })
@@ -115,7 +128,7 @@ function Page() {
     };
 
     const handleInput = async (event, blockIdWithChildren) => {
-        console.log("blockIdWithChildren",blockIdWithChildren);
+        console.log("allBlockIds",allBlockIds);
         if (event.key === 'Enter') {
             event.preventDefault();
 
@@ -162,7 +175,7 @@ function Page() {
             const blockIdWithChildren = [block.block_id, block.children ? block.children.map(child => child.block_id) : []];
             const newParentBlockIdList = [...parentBlockIdList, blockIdWithChildren];
             const blockStyle = { marginLeft: `${block.indentLevel * 20}px` };
-            const key = `block-${block.block_id}-${index}`; // Create a unique key
+            const key = `block-${block.block_id}-${index}`;
 
             const handleKeyDown = (e) => handleInput(e, blockIdWithChildren);
             const handleBlockInput = (e) => handleContentChange(e.target.innerText, blockIdWithChildren, e.target);
