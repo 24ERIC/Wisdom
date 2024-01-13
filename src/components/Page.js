@@ -65,7 +65,7 @@ function Page() {
         let range = document.createRange();
         let sel = window.getSelection();
         console.log(range);
-        range.setStart(element.childNodes[0], offset-1);
+        range.setStart(element.childNodes[0], offset);
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
@@ -188,12 +188,14 @@ function Page() {
                 break;
             case 'ArrowLeft':
                 if (caretPos === 0) {
+                    event.preventDefault();
                     nextIndex = currentIndex - 1;
                     focusOnBlock(nextIndex, true);
                 }
                 return;
             case 'ArrowRight':
                 if (caretPos === textLength) {
+                    event.preventDefault();
                     nextIndex = currentIndex + 1;
                     focusOnBlock(nextIndex, false);
                 }
