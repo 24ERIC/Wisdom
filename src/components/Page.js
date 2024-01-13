@@ -3,25 +3,37 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 function Page() {
-    const [pageData, setPageData] = useState(null);
+    // Initialize pageData as an object with default properties
+    const [pageData, setPageData] = useState({ page_title: '', blocks: [] });
     const { id } = useParams();
     const focusedElementRef = useRef(null);
 
     useEffect(() => {
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
-                setPageData(response.data);
+                // Update the page data only if the response is in the expected format
+                if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
+                    setPageData(response.data);
+                } else {
+                    console.error('Invalid format of fetched data');
+                }
             })
             .catch(error => {
                 console.error('Error fetching page:', error);
             });
     }, [id]);
+
     const handleTitleChange = (content, element) => {
         const caret = getCaretPosition(element);
-        const updatedPageData = [...pageData];
-        updatedPageData[0].page_title = content;
+        // Directly update the page_title in the pageData object
+        const updatedPageData = {
+            ...pageData,
+            page_title: content
+        };
         setPageData(updatedPageData);
         setTimeout(() => setCaretPosition(element, caret), 0);
+
+
         axios.put(`http://localhost:5000/pages/${id}`, {
             title: content,
         })
@@ -60,29 +72,47 @@ function Page() {
         sel.addRange(range);
         element.focus();
     };
-
     const handleContentChange = (content, index, element) => {
         const caret = getCaretPosition(element);
-        const updatedPageData = [...pageData];
-        updatedPageData[index].block_content = content;
-        setPageData(updatedPageData);
-        setTimeout(() => setCaretPosition(element, caret), 0);
-        axios.put(`http://localhost:5000/blocks/${updatedPageData[index].block_id}`, {
-            content: content,
-        })
+        let updatedBlocks = [...pageData.blocks];
+    
+        if (index >= 0 && index < updatedBlocks.length) {
+            updatedBlocks[index].block_content = content;
+    
+            const updatedPageData = {
+                ...pageData,
+                blocks: updatedBlocks
+            };
+            setPageData(updatedPageData);
+    
+            setTimeout(() => {
+                if (element.childNodes[0] && caret <= element.childNodes[0].length) {
+                    setCaretPosition(element, caret);
+                }
+            }, 0);
+    
+            // Move the axios call inside the if block
+            axios.put(`http://localhost:5000/blocks/${updatedBlocks[index].block_id}`, {
+                content: content,
+            })
             .then(response => {
                 console.log('Saved:', response.data);
             })
             .catch(error => {
                 console.error('Error saving block:', error);
             });
+        }
     };
+    
 
     const renderBlocks = (blocks, indentLevel = 0) => {
+        if (!Array.isArray(blocks)) {
+            return null; // Handle the case when blocks is not an array
+        }
         return blocks.map((block, index) => {
             const blockStyle = { marginLeft: `${indentLevel * 20}px` };
             const key = `block-${block.block_id}`;
-    
+
             // This function is now specific to the block being edited
             const handleInput = (event) => {
                 focusedElementRef.current = event.target;
@@ -90,7 +120,7 @@ function Page() {
                 const actualIndex = pageData.blocks.findIndex(b => b.block_id === block.block_id);
                 handleContentChange(event.target.innerText, actualIndex, event.target);
             };
-    
+
             const blockProps = {
                 onInput: handleInput,
                 contentEditable: true,
@@ -98,7 +128,7 @@ function Page() {
                 className: `block block-${block.block_type}`,
                 style: blockStyle,
             };
-    
+
             const renderChildren = (children) => {
                 return children.map((child, childIndex) => {
                     return (
@@ -117,7 +147,7 @@ function Page() {
                     );
                 });
             };
-    
+
             switch (block.block_type) {
                 case 'header1':
                     return <h1 key={key} {...blockProps}>{block.block_content}</h1>;
@@ -146,7 +176,7 @@ function Page() {
 
     return (
         <div className="page-content">
-            {pageData ? (
+            {pageData && pageData.blocks && pageData.blocks.length > 0 ? (
                 <>
                     <div
                         contentEditable
@@ -162,7 +192,7 @@ function Page() {
                     </div>
                 </>
             ) : (
-                <p>Loading page...</p>
+                <p>Loading page or no data available...</p>
             )}
         </div>
     );
