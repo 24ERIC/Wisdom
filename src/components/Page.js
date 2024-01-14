@@ -8,7 +8,7 @@ function Page() {
     const { id } = useParams();
     const focusedElementRef = useRef(null);
     const [newBlockId, setNewBlockId] = useState(null);
-    const PLACEHOLDER_TEXT = "Press 'space' for AI, \"\/\" for commands...";
+    const PLACEHOLDER_TEXT = "Press 'space' for AI, \"/\" for commands...";
 
 
     const extractBlockIds = (blocks) => {
