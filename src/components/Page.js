@@ -150,11 +150,13 @@ function Page() {
     };
 
     const handleInput = async (event, blockIdWithChildren) => {
+        console.log("Key pressed:", event.key);
         const currentElement = event.target;
         if (currentElement.innerText === PLACEHOLDER_TEXT && event.key !== 'Enter') {
             currentElement.innerText = '';
             currentElement.classList.remove("placeholder-style");
         }
+
         if (event.key === 'Enter') {
             event.preventDefault();
             const cursorPosition = getCaretPosition(currentElement);
@@ -193,9 +195,35 @@ function Page() {
             }
         } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
             handleArrowNavigation(event, blockIdWithChildren[0]);
-        } else {
+        } else if (event.key === 'Backspace') {
+            console.log("Delete key pressed on block:", blockIdWithChildren[0]);
+            if (!currentElement.innerText.trim()) {
+                console.log("Block is empty, proceeding with delete");
+                event.preventDefault();
+                const currentBlockId = blockIdWithChildren[0];
+                await handleDeleteBlock(currentBlockId);
+                return;
+            }
+        }  else {
             focusedElementRef.current = event.target;
             handleContentChange(event.target.innerText, blockIdWithChildren, event.target);
+        }
+    };
+
+    const handleDeleteBlock = async (blockId) => {
+        try {
+            const response = await axios.delete(`http://localhost:5000/blocks/${blockId}/single`);
+            console.log('Block deleted:', response);
+    
+            const responsePageData = await axios.get(`http://localhost:5000/pages/${id}`);
+            if (responsePageData.data && responsePageData.data.page_title && Array.isArray(responsePageData.data.blocks)) {
+                setPageData(responsePageData.data);
+                setAllBlockIds(extractBlockIds(responsePageData.data.blocks));
+            } else {
+                console.error('Invalid format of fetched data');
+            }
+        } catch (error) {
+            console.error('Error deleting block:', error);
         }
     };
 

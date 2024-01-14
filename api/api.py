@@ -69,24 +69,48 @@ def handle_block_delete_single(block_id):
     block_to_delete = Block.query.get(block_id)
     if not block_to_delete:
         abort(404)
-        
+
+    def delete_block_and_children(block):
+        # Recursive function to delete a block and its list children
+        if block.list_child_id:
+            list_child_block = Block.query.get(block.list_child_id)
+            delete_block_and_children(list_child_block)
+        db.session.delete(block)
+
+    # If the block to delete is the root block of a page, handle accordingly
     page = Page.query.filter_by(block_id=block_id).first()
     if page:
         if block_to_delete.child_id:
             page.block_id = block_to_delete.child_id
         else:
+            # If there's no child, create a new block to replace the deleted root block
             new_block = Block()
             db.session.add(new_block)
-            db.session.flush()
+            db.session.flush()  # To get the new block's ID
             page.block_id = new_block.id
-    else:
-        parent_block = Block.query.filter_by(child_id=block_id).first()
-        if parent_block:
-            parent_block.child_id = block_to_delete.child_id
 
-    db.session.delete(block_to_delete)
+    # If the block to delete is not a root block, handle its parent and children
+    else:
+        # If the block to delete has a list_child_id, we need to handle this scenario
+        if block_to_delete.list_child_id:
+            # Find the parent block whose child_id is the block to delete
+            parent_block = Block.query.filter_by(child_id=block_id).first()
+            if parent_block:
+                # If the block to delete has a child_id, link it to the parent
+                if block_to_delete.child_id:
+                    parent_block.child_id = block_to_delete.child_id
+                else:
+                    # If there is no child_id, remove the link from the parent
+                    parent_block.child_id = None
+
+        # Delete the block and its list children
+        delete_block_and_children(block_to_delete)
+
     db.session.commit()
     return '', 204
+
+
+
 
 
 @app.route('/blocks/<int:block_id>/children', methods=['DELETE'])
