@@ -81,13 +81,17 @@ function Page() {
 
     const setCaretPosition = (element, offset) => {
         if (element.childNodes.length === 0) {
-            element.appendChild(document.createTextNode(PLACEHOLDER_TEXT)); // Add placeholder text if empty
+            element.appendChild(document.createTextNode(PLACEHOLDER_TEXT));
             element.classList.add("placeholder-style");
         }
 
+        const textNode = element.childNodes[0];
+        const adjustedOffset = Math.min(offset, textNode.length);
+
+
         let range = document.createRange();
         let sel = window.getSelection();
-        range.setStart(element.childNodes[0], offset);
+        range.setStart(element.childNodes[0], adjustedOffset);
         range.collapse(true);
 
         sel.removeAllRanges();

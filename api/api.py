@@ -48,19 +48,8 @@ def split_block(current_block_id):
     db.session.commit()
     return jsonify(block_id=new_block.id), 201
 
-@app.route('/pages', methods=['POST'])
-def create_page():
-    data = request.json
-    new_page = Page(
-        block_id=data.get('block_id'),
-        title=data.get('title')
-    )
-    db.session.add(new_page)
-    db.session.commit()
-    return jsonify(page_id=new_page.id), 201
-
-@app.route('/blocks/<int:block_id>', methods=['PUT', 'DELETE'])
-def handle_block(block_id):
+@app.route('/blocks/<int:block_id>', methods=['PUT'])
+def handle_block_put(block_id):
     block = Block.query.get(block_id)
     if not block:
         abort(404)
@@ -74,6 +63,51 @@ def handle_block(block_id):
         delete_recursive(block_id)
         db.session.commit()
         return '', 204
+
+@app.route('/blocks/<int:block_id>/single', methods=['DELETE'])
+def handle_block_delete_single(block_id):
+    block_to_delete = Block.query.get(block_id)
+    if not block_to_delete:
+        abort(404)
+        
+    page = Page.query.filter_by(block_id=block_id).first()
+    if page:
+        if block_to_delete.child_id:
+            page.block_id = block_to_delete.child_id
+        else:
+            new_block = Block()
+            db.session.add(new_block)
+            db.session.flush()
+            page.block_id = new_block.id
+    else:
+        parent_block = Block.query.filter_by(child_id=block_id).first()
+        if parent_block:
+            parent_block.child_id = block_to_delete.child_id
+
+    db.session.delete(block_to_delete)
+    db.session.commit()
+    return '', 204
+
+
+@app.route('/blocks/<int:block_id>/children', methods=['DELETE'])
+def handle_block_delete_children(block_id):
+    delete_recursive(block_id)
+    db.session.commit()
+    return '', 204
+
+
+@app.route('/pages', methods=['POST'])
+def create_page():
+    data = request.json
+    new_page = Page(
+        block_id=data.get('block_id'),
+        title=data.get('title')
+    )
+    db.session.add(new_page)
+    db.session.commit()
+    return jsonify(page_id=new_page.id), 201
+
+
 
 def delete_recursive(block_id):
     block = Block.query.get(block_id)
