@@ -72,28 +72,54 @@ def handle_block_put(block_id):
 
 @app.route('/blocks/<int:block_id>/single', methods=['DELETE'])
 def handle_block_delete_single(block_id):
+    # print(f"{orange_text}{larger_header}page --- parent/child/list --- {page.id}, {page.block_id},{reset_format}")
     curr_block = Block.query.get(block_id)
-
-    print(f"{orange_text}{larger_header}block_to_delete --- parent/child/list --- {curr_block.id}, {curr_block.parent_id}, {curr_block.child_id}, {curr_block.list_child_id}{reset_format}")
-    if curr_block.list_child_id is None and curr_block.child_id: # no subitem, has below item ✅
-        parent_block = Block.query.get(curr_block.parent_id)
-        parent_block.child_id = curr_block.child_id
-        
-    if curr_block.list_child_id is None and curr_block.child_id is None: # no subitem, no below item ✅
-        parent_block = Block.query.get(curr_block.parent_id)
-        parent_block.child_id = ""
+    print(f"{orange_text}{larger_header}page --- parent/child/list --- {page.id}, {page.block_id},{reset_format}")
+    page = Page.query.filter_by(block_id=block_id).first()
     
-    if curr_block.list_child_id: # has subitem
-        parent_block = Block.query.get(curr_block.parent_id)
-        print(f"{orange_text}{larger_header}parent_block --- parent/child/list --- {parent_block.id}, {parent_block.parent_id}, {parent_block.child_id}, {parent_block.list_child_id}{reset_format}")
+    if curr_block.parent_id is None and curr_block.list_child_id:
+        print(f"{orange_text}{larger_header} Enter first if --- {reset_format}")
         child_1_block = Block.query.get(curr_block.list_child_id)
-        print(f"{orange_text}{larger_header}child_1_block --- parent/child/list --- {child_1_block.id}, {child_1_block.parent_id}, {child_1_block.child_id}, {child_1_block.list_child_id}{reset_format}")
         curr = Block.query.get(curr_block.list_child_id)
         while curr.child_id:
             curr = Block.query.get(curr.child_id)
         child_last_block = curr
-        print(f"{orange_text}{larger_header}child_last_block --- parent/child/list --- {child_last_block.id}, {child_last_block.parent_id}, {child_last_block.child_id}, {child_last_block.list_child_id}{reset_format}")
         
+        if curr_block.child_id:
+            child_last_block.child_id = curr_block.child_id
+            Block.query.get(curr_block.child_id).parent_id = child_last_block.id
+            
+        page.block_id = child_1_block.id
+        child_1_block.parent_id = None
+        
+    elif curr_block.parent_id is None and curr_block.child_id:
+        page.block_id = curr_block.child_id
+        Block.query.get(curr_block.child_id).parent_id = None
+    elif curr_block.parent_id is None and curr_block.child_id is None:
+        # If there's no child, create a new block to replace the deleted root block
+        new_block = Block()
+        db.session.add(new_block)
+        db.session.flush()  # To get the new block's ID
+        page.block_id = new_block.id
+
+    elif curr_block.list_child_id is None and curr_block.child_id: # no subitem, has below item ✅
+        parent_block = Block.query.get(curr_block.parent_id)
+        parent_block.child_id = curr_block.child_id
+        
+    elif curr_block.list_child_id is None and curr_block.child_id is None: # no subitem, no below item ✅
+        parent_block = Block.query.get(curr_block.parent_id)
+        parent_block.child_id = ""
+    
+    elif curr_block.list_child_id: # has subitem
+        # init
+        parent_block = Block.query.get(curr_block.parent_id)
+        child_1_block = Block.query.get(curr_block.list_child_id)
+        curr = Block.query.get(curr_block.list_child_id)
+        while curr.child_id:
+            curr = Block.query.get(curr.child_id)
+        child_last_block = curr
+        
+        # different situation
         if parent_block.list_child_id == curr_block.id: # parent is left
             parent_block.list_child_id = child_1_block.id
             
@@ -105,48 +131,6 @@ def handle_block_delete_single(block_id):
             Block.query.get(curr_block.child_id).parent_id = child_last_block.id
             
     db.session.delete(curr_block)
-        
-        
-    
-    # if not block_to_delete:
-    #     abort(404)
-
-    # def delete_block_and_children(block):
-    #     # Recursive function to delete a block and its list children
-    #     if block.list_child_id:
-    #         list_child_block = Block.query.get(block.list_child_id)
-    #         delete_block_and_children(list_child_block)
-    #     db.session.delete(block)
-
-    # # If the block to delete is the root block of a page, handle accordingly
-    # page = Page.query.filter_by(block_id=block_id).first()
-    # if page:
-    #     if block_to_delete.child_id:
-    #         page.block_id = block_to_delete.child_id
-    #     else:
-    #         # If there's no child, create a new block to replace the deleted root block
-    #         new_block = Block()
-    #         db.session.add(new_block)
-    #         db.session.flush()  # To get the new block's ID
-    #         page.block_id = new_block.id
-
-    # # If the block to delete is not a root block, handle its parent and children
-    # else:
-    #     # If the block to delete has a list_child_id, we need to handle this scenario
-    #     if block_to_delete.list_child_id:
-    #         # Find the parent block whose child_id is the block to delete
-    #         parent_block = Block.query.filter_by(child_id=block_id).first()
-    #         if parent_block:
-    #             # If the block to delete has a child_id, link it to the parent
-    #             if block_to_delete.child_id:
-    #                 parent_block.child_id = block_to_delete.child_id
-    #             else:
-    #                 # If there is no child_id, remove the link from the parent
-    #                 parent_block.child_id = None
-
-    #     # Delete the block and its list children
-    #     delete_block_and_children(block_to_delete)
-
     db.session.commit()
     return '', 204
 
