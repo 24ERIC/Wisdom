@@ -1,34 +1,27 @@
-// TextBlock.js
 import React from 'react';
+import { Editor, EditorState, ContentState } from 'draft-js';
+import 'draft-js/dist/Draft.css';
 import { useAppContext } from './AppContext';
 
 const TextBlock = ({ block }) => {
-    const { updateBlock } = useAppContext();
+    const { updateBlockContent } = useAppContext();
 
-    const handleContentChange = (e) => {
-        // Assuming block content is plain text
-        updateBlock(block.block_id, e.target.innerText, block.style);
-    };
-    const handleStyleChange = (color) => {
-        // Update the block's color
-        updateBlock(block.block_id, block.content, { ...block.style, color });
+    // Ensure that block.content is not undefined
+    const content = block.content || '';
+
+    const [editorState, setEditorState] = React.useState(
+        EditorState.createWithContent(ContentState.createFromText(content))
+    );
+
+    const handleEditorChange = (newEditorState) => {
+        setEditorState(newEditorState);
+        const contentState = newEditorState.getCurrentContent();
+        updateBlockContent(block.id, contentState.getPlainText());
     };
 
     return (
-        <div>
-            <div
-                contentEditable
-                onInput={handleContentChange}
-                suppressContentEditableWarning={true}
-                style={{ color: block.style?.color }}
-            >
-                {block.content}
-            </div>
-            <button onClick={() => handleStyleChange('red')}>Red</button>
-            <button onClick={() => handleStyleChange('green')}>Green</button>
-            <button onClick={() => handleStyleChange('blue')}>Blue</button>
-        </div>
+        <Editor editorState={editorState} onChange={handleEditorChange} />
     );
 };
 
-export default TextBlock;        
+export default TextBlock;
