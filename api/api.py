@@ -7,6 +7,12 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 
+
+orange_text = "\033[38;5;202m"
+reset_format = "\033[0m"
+larger_header = "\033[1m"
+
+
 class Block(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer)
@@ -67,6 +73,8 @@ def handle_block_put(block_id):
 @app.route('/blocks/<int:block_id>/single', methods=['DELETE'])
 def handle_block_delete_single(block_id):
     block_to_delete = Block.query.get(block_id)
+
+    print(f"{orange_text}{larger_header}block_to_delete --- parent id, child id, list child id{reset_format} --- {block_to_delete.parent_id}, {block_to_delete.child_id}, {block_to_delete.list_child_id}")
     if not block_to_delete:
         abort(404)
 
