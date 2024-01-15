@@ -22,6 +22,7 @@ function Page() {
     };
 
     useEffect(() => {
+        console.log("pageData",pageData);
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {

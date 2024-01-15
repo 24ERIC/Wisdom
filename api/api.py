@@ -74,7 +74,7 @@ def handle_block_put(block_id):
 def handle_block_delete_single(block_id):
     # print(f"{orange_text}{larger_header}page --- parent/child/list --- {page.id}, {page.block_id},{reset_format}")
     curr_block = Block.query.get(block_id)
-    print(f"{orange_text}{larger_header}page --- parent/child/list --- {page.id}, {page.block_id},{reset_format}")
+    # print(f"{orange_text}{larger_header}page --- parent/child/list --- {page.id}, {page.block_id},{reset_format}")
     page = Page.query.filter_by(block_id=block_id).first()
     
     if curr_block.parent_id is None and curr_block.list_child_id:
