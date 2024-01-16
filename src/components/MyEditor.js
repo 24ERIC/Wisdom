@@ -10,10 +10,10 @@ function MyEditor() {
 
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
-  const [hoveredIndex, setHoveredIndex] = useState(null); // Changed to hoveredIndex
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  const handleMouseEnter = (index) => setHoveredIndex(index); // Updated to take index
-  const handleMouseLeave = () => setHoveredIndex(null); // Resets hovered index
+  const handleMouseEnter = (index) => setHoveredIndex(index);
+  const handleMouseLeave = () => setHoveredIndex(null);
 
 
   const onDragStart = (start) => {
