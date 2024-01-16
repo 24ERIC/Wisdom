@@ -15,7 +15,23 @@ function MyEditor() {
     { id: 'todo-9', text: 'Build a Todo App' }
   ]);
 
+
+  
+  const [draggingIndex, setDraggingIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+
+  const onDragStart = (start) => {
+    setDraggingIndex(start.source.index);
+  };
+
+  const onDragUpdate = (update) => {
+    const destination = update.destination;
+    setDragOverIndex(destination ? destination.index : null);
+  };
+
   const onDragEnd = (result) => {
+    setDraggingIndex(null);
+    setDragOverIndex(null);
     if (!result.destination) return;
     const items = Array.from(todos);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -24,28 +40,37 @@ function MyEditor() {
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
       <Droppable droppableId="todos">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {todos.map((todo, index) => (
-              <Draggable key={todo.id} draggableId={todo.id} index={index}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                  >
-                    {/* Six-dot icon for dragging */}
-                    <span
-                      {...provided.dragHandleProps}
-                      style={{ cursor: 'grab', marginRight: '8px' }}
-                    >
-                      ⠿
-                    </span>
-                    {todo.text}
-                  </div>
+              <React.Fragment key={todo.id}>
+                {/* Render a placeholder blue line for the potential drop position */}
+                {dragOverIndex === index && (
+                  <div style={{ height: '2px', backgroundColor: 'blue' }}></div>
                 )}
-              </Draggable>
+                <Draggable draggableId={todo.id} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      style={{
+                        ...provided.draggableProps.style,
+                        transform: snapshot.isDragging ? provided.draggableProps.style.transform : null
+                      }}
+                    >
+                      <span
+                        {...provided.dragHandleProps}
+                        style={{ cursor: 'grab', marginRight: '8px' }}
+                      >
+                        ⠿
+                      </span>
+                      {todo.text}
+                    </div>
+                  )}
+                </Draggable>
+              </React.Fragment>
             ))}
             {provided.placeholder}
           </div>
