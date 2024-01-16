@@ -1,46 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { Editor, EditorState, ContentState, convertFromRaw } from 'draft-js';
-import 'draft-js/dist/Draft.css';
 
-const MyEditor = () => {
-  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+import React, { useState } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
-  useEffect(() => {
-    // Simulate fetching data from backend
-    const backendData = {
-      blocks: [
-        { type: 'unordered-list-item', text: 'Main Bullet Point', depth: 0 },
-        { type: 'unordered-list-item', text: 'Subitem 1', depth: 1 },
-        { type: 'unordered-list-item', text: 'Sub-Subitem 1', depth: 2 },
-        { type: 'unordered-list-item', text: 'Sub-Subitem 2', depth: 2 },
-        { type: 'unordered-list-item', text: 'Sub-Subitem 3', depth: 2 },
-        { type: 'unordered-list-item', text: 'Subitem 2', depth: 1 },
-        { type: 'unordered-list-item', text: 'Subitem 3', depth: 1 },
-      ],
-    };
+function MyEditor() {
+  const [todos, setTodos] = useState([
+    { id: 'todo-1', text: 'Learn React' },
+    { id: 'todo-2', text: 'Learn react-beautiful-dnd' },
+    { id: 'todo-3', text: 'Learn React' },
+    { id: 'todo-4', text: 'Learn react-beautiful-dnd' },
+    { id: 'todo-5', text: 'Learn React' },
+    { id: 'todo-6', text: 'Learn react-beautiful-dnd' },
+    { id: 'todo-7', text: 'Learn React' },
+    { id: 'todo-8', text: 'Learn react-beautiful-dnd' },
+    { id: 'todo-9', text: 'Build a Todo App' }
+  ]);
 
-    const contentState = convertFromRaw({
-      entityMap: {},
-      blocks: backendData.blocks.map(block => ({
-        text: block.text,
-        type: block.type,
-        depth: block.depth,
-        key: Math.random().toString(36).substr(2, 5), // Generate a unique key for each block
-        entityRanges: [],
-        inlineStyleRanges: [],
-      })),
-    });
-
-    setEditorState(EditorState.createWithContent(contentState));
-  }, []);
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    const items = Array.from(todos);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setTodos(items);
+  };
 
   return (
-    <Editor 
-      editorState={editorState} 
-      onChange={setEditorState} 
-      readOnly={true} // Set to false if you want it to be editable
-    />
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="todos">
+        {(provided) => (
+          <div {...provided.droppableProps} ref={provided.innerRef}>
+            {todos.map((todo, index) => (
+              <Draggable key={todo.id} draggableId={todo.id} index={index}>
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                  >
+                    {/* Six-dot icon for dragging */}
+                    <span
+                      {...provided.dragHandleProps}
+                      style={{ cursor: 'grab', marginRight: '8px' }}
+                    >
+                      ⠿
+                    </span>
+                    {todo.text}
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
-};
+}
 
 export default MyEditor;
