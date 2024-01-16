@@ -1,23 +1,13 @@
-
-
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 function MyEditor() {
   const [todos, setTodos] = useState([
-    { id: 'todo-1', text: 'Learn React' },
-    { id: 'todo-2', text: 'Learn react-beautiful-dnd' },
-    { id: 'todo-3', text: 'Learn React' },
-    { id: 'todo-4', text: 'Learn react-beautiful-dnd' },
-    { id: 'todo-5', text: 'Learn React' },
-    { id: 'todo-6', text: 'Learn react-beautiful-dnd' },
-    { id: 'todo-7', text: 'Learn React' },
-    { id: 'todo-8', text: 'Learn react-beautiful-dnd' },
-    { id: 'todo-9', text: 'Build a Todo App' }
+    { id: '1', text: 'Learn React' },
+    { id: '2', text: 'Learn react-beautiful-dnd' },
+    { id: '3', text: 'Learn React' }
   ]);
 
-
-  
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
@@ -41,15 +31,19 @@ function MyEditor() {
   };
 
   return (
-    <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
+    <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate}  onDragEnd={onDragEnd}> 
       <Droppable droppableId="todos">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {todos.map((todo, index) => (
               <React.Fragment key={todo.id}>
-                {/* Render a placeholder blue line for the potential drop position */}
                 {dragOverIndex === index && (
                   <div style={{ height: '2px', backgroundColor: 'blue' }}></div>
+                ) }
+                { draggingIndex === index && (
+                  <div style={{ opacity: 1 }}>
+                    ⠿ {todo.text}
+                  </div>
                 )}
                 <Draggable draggableId={todo.id} index={index}>
                   {(provided, snapshot) => (
@@ -58,6 +52,7 @@ function MyEditor() {
                       {...provided.draggableProps}
                       style={{
                         ...provided.draggableProps.style,
+                        opacity: snapshot.isDragging ? 0.5 : 1,
                         transform: snapshot.isDragging ? provided.draggableProps.style.transform : null
                       }}
                     >
