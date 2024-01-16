@@ -22,9 +22,12 @@ function Page() {
     };
 
     useEffect(() => {
-        console.log("pageData",pageData);
+        console.log("get pageData",pageData);
+
         axios.get(`http://localhost:5000/pages/${id}`)
             .then(response => {
+                console.log("http://localhost:5000/pages/1 response",response);
+
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData(response.data);
                     setAllBlockIds(extractBlockIds(response.data.blocks));
