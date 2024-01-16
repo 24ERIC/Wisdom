@@ -10,6 +10,11 @@ function MyEditor() {
 
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null); // Changed to hoveredIndex
+
+  const handleMouseEnter = (index) => setHoveredIndex(index); // Updated to take index
+  const handleMouseLeave = () => setHoveredIndex(null); // Resets hovered index
+
 
   const onDragStart = (start) => {
     setDraggingIndex(start.source.index);
@@ -31,13 +36,13 @@ function MyEditor() {
   };
 
   return (
-    <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate}  onDragEnd={onDragEnd}> 
+    <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
       <Droppable droppableId="todos">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {todos.map((todo, index) => (
               <div key={todo.id} style={{ position: 'relative' }}>
-                
+
                 {dragOverIndex === index && (
                   <div style={{
                     position: 'absolute',
@@ -48,8 +53,8 @@ function MyEditor() {
                     backgroundColor: 'skyblue',
                     zIndex: 1
                   }}></div>
-                ) }
-                { draggingIndex === index && (
+                )}
+                {draggingIndex === index && (
                   <div style={{ opacity: 1 }}>
                     ⠿ {todo.text}
                   </div>
@@ -66,10 +71,12 @@ function MyEditor() {
                         marginBottom: '2px',
                         marginTop: '2px',
                       }}
+                      onMouseEnter={() => handleMouseEnter(index)}
+                      onMouseLeave={handleMouseLeave}
                     >
                       <span
                         {...provided.dragHandleProps}
-                        style={{ cursor: 'grab', marginRight: '8px' }}
+                        style={{ cursor: 'grab', marginRight: '8px', opacity: hoveredIndex === index ? '1' : '0' }}
                       >
                         ⠿
                       </span>
