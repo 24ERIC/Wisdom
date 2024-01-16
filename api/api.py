@@ -15,6 +15,11 @@ larger_header = "\033[1m"
 
 class Block(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer)
+    parent_id = db.Column(db.Integer)
+
+class Block(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer)
     child_id = db.Column(db.Integer)
     list_child_id = db.Column(db.Integer)

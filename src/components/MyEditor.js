@@ -363,73 +363,51 @@ function MyEditor() {
 
   return (
     <>
-        {pageData && pageData.blocks && pageData.blocks.length > 0 ? (
-                <>
-                    <div
-                        contentEditable
-                        onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
-                        suppressContentEditableWarning={true}
-                        ref={focusedElementRef}
-                    >
-                        {pageData.page_title}
-                    </div>
-                    <div className="blocks-container">
-                        {renderBlocks(pageData.blocks)}
-                    </div>
-                </>
-            ) : (
-                <p>Loading page or no data available...</p>
-            )}
+      {pageData && pageData.blocks && pageData.blocks.length > 0 ? (
+        <>
+          <div
+            contentEditable
+            onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
+            suppressContentEditableWarning={true}
+            ref={focusedElementRef}
+          >
+            {pageData.page_title}
+          </div>
+        </>
+      ) : (
+        <p>Loading page or no data available...</p>
+      )}
       <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
-      
-        <Droppable droppableId="todos">
+        <Droppable droppableId="block-list">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef}>
-              {todos.map((todo, index) => (
-                <div key={todo.id} style={{ position: 'relative' }}>
-
-                  {dragOverIndex === index && (
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '5px',
-                      backgroundColor: 'skyblue',
-                      zIndex: 1
-                    }}></div>
-                  )}
-                  {draggingIndex === index && (
-                    <div style={{ opacity: 1 }}>
-                      ⠿ {todo.text}
-                    </div>
-                  )}
-                  <Draggable draggableId={todo.id} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        style={{
-                          ...provided.draggableProps.style,
-                          opacity: snapshot.isDragging ? 0.5 : 1,
-                          transform: snapshot.isDragging ? provided.draggableProps.style.transform : null,
-                          marginBottom: '2px',
-                          marginTop: '2px',
-                        }}
-                        onMouseEnter={() => handleMouseEnter(index)}
-                        onMouseLeave={handleMouseLeave}
+              {renderBlocks(pageData.blocks).map((blockElement, index) => (
+                <Draggable key={blockElement.key} draggableId={blockElement.key} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      style={{
+                        ...provided.draggableProps.style,
+                        opacity: snapshot.isDragging ? 0.5 : 1,
+                        transform: snapshot.isDragging ? provided.draggableProps.style.transform : null,
+                        marginBottom: '2px',
+                        marginTop: '2px',
+                      }}
+                      onMouseEnter={() => handleMouseEnter(index)}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <span
+                        {...provided.dragHandleProps}
+                        style={{ cursor: 'grab', marginRight: '8px' }}
                       >
-                        <span
-                          {...provided.dragHandleProps}
-                          style={{ cursor: 'grab', marginRight: '8px', opacity: hoveredIndex === index ? '1' : '0' }}
-                        >
-                          ⠿
-                        </span>
-                        {todo.text}
-                      </div>
-                    )}
-                  </Draggable>
-                </div>
+                        ⠿
+                      </span>
+                      {blockElement}
+                    </div>
+
+                  )}
+                </Draggable>
               ))}
               {provided.placeholder}
             </div>
@@ -441,3 +419,4 @@ function MyEditor() {
 }
 
 export default MyEditor;
+
