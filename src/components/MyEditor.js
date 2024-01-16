@@ -36,9 +36,18 @@ function MyEditor() {
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {todos.map((todo, index) => (
-              <React.Fragment key={todo.id}>
+              <div key={todo.id} style={{ position: 'relative' }}>
+                
                 {dragOverIndex === index && (
-                  <div style={{ height: '2px', backgroundColor: 'blue' }}></div>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '5px',
+                    backgroundColor: 'skyblue',
+                    zIndex: 1
+                  }}></div>
                 ) }
                 { draggingIndex === index && (
                   <div style={{ opacity: 1 }}>
@@ -53,7 +62,9 @@ function MyEditor() {
                       style={{
                         ...provided.draggableProps.style,
                         opacity: snapshot.isDragging ? 0.5 : 1,
-                        transform: snapshot.isDragging ? provided.draggableProps.style.transform : null
+                        transform: snapshot.isDragging ? provided.draggableProps.style.transform : null,
+                        marginBottom: '2px',
+                        marginTop: '2px',
                       }}
                     >
                       <span
@@ -66,7 +77,7 @@ function MyEditor() {
                     </div>
                   )}
                 </Draggable>
-              </React.Fragment>
+              </div>
             ))}
             {provided.placeholder}
           </div>
