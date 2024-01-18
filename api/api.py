@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from sqlalchemy import Enum
 
 app = Flask(__name__)
 CORS(app)
@@ -13,24 +14,39 @@ reset_format = "\033[0m"
 larger_header = "\033[1m"
 
 
-# class Block(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     child_id = db.Column(db.Integer)
-#     parent_id = db.Column(db.Integer)
 
 class Block(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    root_page_id = db.Column(db.Integer)
     parent_id = db.Column(db.Integer)
     child_id = db.Column(db.Integer)
-    list_child_id = db.Column(db.Integer)
     content = db.Column(db.Text)
-    type = db.Column(db.String(50))
-    meta = db.Column(db.Text)
+    type = db.Column(Enum('page', 'unordered-list-item', 'ordered-list-item', 'header-one', 'header-two', 'header-three', 'header-four', 'header-five', 'header-six', 'blockquote', 'code-block', 'atomic', name='valid_block_type')) 
+        # default null = plain text
+        # page = a link (draft can handle link, Editor, EditorState, RichUtils, Entity, ContentState )
+        # todo-list-item (draft no, )
+        # toggle list = 
+    media_data = db.Column(db.BLOB)
+    depth = db.Column(db.Integer, default=0)
+
+
+# problem
+# custom todo-list, toggle-list, page-link-redirect
+# custom bullet-point inside toggle-list
+
+
+    
+
+
+
+
+
 
 class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     block_id = db.Column(db.Integer)
-    title = db.Column(db.String(100))
+    title = db.Column(db.String)
+    star = db.Column(db.Integer) # 0 is no start, 1 is stared
 
 @app.route('/blocks/<int:current_block_id>', methods=['POST'])
 def split_block(current_block_id):
