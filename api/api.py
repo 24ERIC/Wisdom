@@ -73,21 +73,56 @@ class Block(db.Model):
 
 
 
-    
-    
-@app.route('/test', methods=['GET'])
-def test():
-    
 
 
-@app.route('/blocks/<int:current_block_id>', methods=['POST'])
-@app.route('/blocks/<int:block_id>', methods=['PUT'])
-@app.route('/blocks/<int:block_id>/single', methods=['DELETE'])
-@app.route('/blocks/<int:block_id>/children', methods=['DELETE'])
-@app.route('/pages', methods=['POST'])
-@app.route('/pages/<int:page_id>', methods=['GET', 'PUT', 'DELETE'])
+
+@app.route('/api/root-blocks', methods=['GET'])
+def get_root_blocks():
+    try:
+        root_blocks = Block.get_root_blocks()
+        root_blocks_data = [{
+            'id': block.id,
+            'root_page_id': block.root_page_id,
+            'parent_id': block.parent_id,
+            'child_id': block.child_id,
+            'content': block.content,
+            'type': block.type.name,  # assuming type is an Enum
+            'media_data': block.media_data,
+            'depth': block.depth
+        } for block in root_blocks]
+
+        return jsonify(root_blocks_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+    
+    
+# @app.route('/test', methods=['GET'])
+# @app.route('/blocks/<int:current_block_id>', methods=['POST'])
+# @app.route('/blocks/<int:block_id>', methods=['PUT'])
+# @app.route('/blocks/<int:block_id>/single', methods=['DELETE'])
+# @app.route('/blocks/<int:block_id>/children', methods=['DELETE'])
+# @app.route('/pages', methods=['POST'])
+# @app.route('/pages/<int:page_id>', methods=['GET', 'PUT', 'DELETE'])
+
+
+
+def add_fake_data():
+    db.session.query(Block).delete()
+    db.session.execute("DELETE FROM sqlite_sequence WHERE name = 'block'")
+    blocks = [
+        Block(id=1, root_page_id=None, parent_id=None, child_id=2, content="Root Block 1", type="page", media_data="", depth=""),
+        Block(id=2, root_page_id=None, parent_id=1, child_id=None, content="Child of Root 1", type="unordered-list-item"),
+        Block(id=3, root_page_id=None, parent_id=None, child_id=4, content="Root Block 2", type="header-one"),
+        Block(id=4, root_page_id=None, parent_id=3, child_id=None, content="Child of Root 2", type="blockquote"),
+    ]
+    db.session.add_all(blocks)
+    db.session.commit()
+    print("Fake data added successfully!")
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        add_fake_data()
     app.run(debug=True)
