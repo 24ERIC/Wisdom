@@ -24,9 +24,9 @@ function Page() {
     useEffect(() => {
         console.log("get pageData",pageData);
 
-        axios.get(`http://localhost:5000/pages/${id}`)
+        axios.get(`http://localhost:5000/page/${id}`)
             .then(response => {
-                console.log("http://localhost:5000/pages/1 response",response);
+                console.log("http://localhost:5000/page/1 response",response);
 
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData(response.data);
@@ -111,7 +111,7 @@ function Page() {
         };
         setPageData(updatedPageData);
         setTimeout(() => setCaretPosition(element, caret), 0);
-        axios.put(`http://localhost:5000/pages/${id}`, { title: content })
+        axios.put(`http://localhost:5000/page/${id}`, { title: content })
             .then(response => {
                 console.log('Title Saved:', response.data);
             })
@@ -142,7 +142,7 @@ function Page() {
         setTimeout(() => setCaretPosition(element, caret), 0);
         handlePlaceholder(element);
         const blockId = blockIdWithChildren[0];
-        axios.put(`http://localhost:5000/blocks/${blockId}`, {
+        axios.put(`http://localhost:5000/block/${blockId}`, {
             content: content,
         })
             .then(response => {
@@ -174,9 +174,9 @@ function Page() {
                 newContent: newContent
             };
             try {
-                const response1 = await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, newBlockData);
+                const response1 = await axios.post(`http://localhost:5000/block/${currentBlockId}`, newBlockData);
                 const newBlockId = response1.data.block_id;
-                const response = await axios.get(`http://localhost:5000/pages/${id}`);
+                const response = await axios.get(`http://localhost:5000/page/${id}`);
                 if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
                     setPageData({
                         ...response.data,
@@ -216,10 +216,10 @@ function Page() {
 
     const handleDeleteBlock = async (blockId) => {
         try {
-            const response = await axios.delete(`http://localhost:5000/blocks/${blockId}/single`);
+            const response = await axios.delete(`http://localhost:5000/block/${blockId}/single`);
             console.log('Block deleted:', response);
     
-            const responsePageData = await axios.get(`http://localhost:5000/pages/${id}`);
+            const responsePageData = await axios.get(`http://localhost:5000/page/${id}`);
             if (responsePageData.data && responsePageData.data.page_title && Array.isArray(responsePageData.data.blocks)) {
                 setPageData(responsePageData.data);
                 setAllBlockIds(extractBlockIds(responsePageData.data.blocks));

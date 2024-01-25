@@ -4,13 +4,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 function MyEditor() {
-  const [todos, setTodos] = useState([
-    { id: '1', text: 'Learn React' },
-    { id: '2', text: 'Learn react-beautiful-dnd' },
-    { id: '3', text: 'Learn React' }
-  ]);
-  const [pageData, setPageData] = useState({ page_title: '', blocks: [] });
-  const [allBlockIds, setAllBlockIds] = useState([]);
+  const [blocks, setBlocks] = useState([]);
   const { id } = useParams();
   const focusedElementRef = useRef(null);
   const [newBlockId, setNewBlockId] = useState(null);
@@ -30,12 +24,10 @@ function MyEditor() {
 
 
   useEffect(() => {
-    console.log("pageData", pageData);
-    axios.get(`http://localhost:5000/pages/${id}`)
+    axios.get(`http://localhost:5000/page/${id}`)
       .then(response => {
-        if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
-          setPageData(response.data);
-          setAllBlockIds(extractBlockIds(response.data.blocks));
+        if (response.data && Array.isArray(response.data)) {
+          setBlocks(response.data);
         } else {
           console.error('Invalid format of fetched data');
         }
@@ -116,7 +108,7 @@ function MyEditor() {
     };
     setPageData(updatedPageData);
     setTimeout(() => setCaretPosition(element, caret), 0);
-    axios.put(`http://localhost:5000/pages/${id}`, { title: content })
+    axios.put(`http://localhost:5000/page/${id}`, { title: content })
       .then(response => {
         console.log('Title Saved:', response.data);
       })
@@ -147,7 +139,7 @@ function MyEditor() {
     setTimeout(() => setCaretPosition(element, caret), 0);
     handlePlaceholder(element);
     const blockId = blockIdWithChildren[0];
-    axios.put(`http://localhost:5000/blocks/${blockId}`, {
+    axios.put(`http://localhost:5000/block/${blockId}`, {
       content: content,
     })
       .then(response => {
@@ -179,9 +171,9 @@ function MyEditor() {
         newContent: newContent
       };
       try {
-        const response1 = await axios.post(`http://localhost:5000/blocks/${currentBlockId}`, newBlockData);
+        const response1 = await axios.post(`http://localhost:5000/block/${currentBlockId}`, newBlockData);
         const newBlockId = response1.data.block_id;
-        const response = await axios.get(`http://localhost:5000/pages/${id}`);
+        const response = await axios.get(`http://localhost:5000/page/${id}`);
         if (response.data && response.data.page_title && Array.isArray(response.data.blocks)) {
           setPageData({
             ...response.data,
@@ -221,10 +213,10 @@ function MyEditor() {
 
   const handleDeleteBlock = async (blockId) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/blocks/${blockId}/single`);
+      const response = await axios.delete(`http://localhost:5000/block/${blockId}/single`);
       console.log('Block deleted:', response);
 
-      const responsePageData = await axios.get(`http://localhost:5000/pages/${id}`);
+      const responsePageData = await axios.get(`http://localhost:5000/page/${id}`);
       if (responsePageData.data && responsePageData.data.page_title && Array.isArray(responsePageData.data.blocks)) {
         setPageData(responsePageData.data);
         setAllBlockIds(extractBlockIds(responsePageData.data.blocks));
@@ -363,22 +355,22 @@ function MyEditor() {
 
   return (
     <>
-        {pageData && pageData.blocks && pageData.blocks.length > 0 ? (
-                <>
-                    <div
-                        contentEditable
-                        onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
-                        suppressContentEditableWarning={true}
-                        ref={focusedElementRef}
-                    >
-                        {pageData.page_title}
-                    </div>
-                </>
-            ) : (
-                <p>Loading page or no data available...</p>
-            )}
+      {blocks.length > 0 ? (
+
+        <div
+          contentEditable
+          onInput={(e) => handleTitleChange(e.target.innerText, e.target)}
+          suppressContentEditableWarning={true}
+          ref={focusedElementRef}
+        >
+          {pageData.page_title}
+        </div>
+
+      ) : (
+        <p>Loading page or no data available...</p>
+      )}
       <DragDropContext onDragStart={onDragStart} onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
-      
+
         <Droppable droppableId="todos">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef}>

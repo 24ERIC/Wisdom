@@ -17,10 +17,17 @@ def add_fake_data():
     db.session.query(Block).delete()
 
     blocks = [
-        Block(id=1, parent_id=None, child_id=2, content="Root 1", type="unordered-list-item", media_data="", depth=0),
+        # bullet list
+        Block(id=1, parent_id=None, child_id=2, content="bullet list 1", type="unordered-list-item", media_data="", depth=0),
         Block(id=2, parent_id=1, child_id=3, content="2, d=1", type="unordered-list-item", media_data="", depth=1),
         Block(id=3, parent_id=2, child_id=4, content="3, d=2", type="unordered-list-item", media_data="", depth=2),
         Block(id=4, parent_id=3, child_id=None, content="4, d=0", type="unordered-list-item", media_data="", depth=0),
+        
+        # number list
+        Block(id=5, parent_id=None, child_id=2, content="number list 5", type="ordered-list-item", media_data="", depth=0),
+        Block(id=6, parent_id=5, child_id=7, content="6, d=1", type="ordered-list-item", media_data="", depth=1),
+        Block(id=7, parent_id=6, child_id=8, content="7, d=2", type="ordered-list-item", media_data="", depth=2),
+        Block(id=8, parent_id=7, child_id=None, content="8, d=0", type="ordered-list-item", media_data="", depth=0),
     ]
     db.session.add_all(blocks)
     db.session.commit()
@@ -102,7 +109,7 @@ class Block(db.Model):
 
 
 
-@app.route('/api/root-blocks', methods=['GET'])
+@app.route('/root-blocks', methods=['GET'])
 def get_root_blocks():
     try:
         root_blocks = Block.get_root_blocks()
@@ -120,7 +127,7 @@ def get_root_blocks():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/page/<int:block_id>', methods=['GET'])
+@app.route('/page/<int:block_id>', methods=['GET'])
 def get_block_and_its_descendants(block_id):
     try:
         blocks = Block.get_block_and_descendants(block_id)

@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import './NavBar.css'; // Assuming you will create this CSS file
+import './NavBar.css';
 
 function NavBar() {
     const [rootBlocks, setRootBlocks] = useState([]);
 
     useEffect(() => {
-        // Fetch root blocks from your API and set them in state
-        // For demonstration, let's assume the API returns an array of block objects
-        fetch('/api/root-blocks') // Replace with your actual API endpoint
-            .then(response => response.json())
-            .then(data => setRootBlocks(data))
-            .catch(error => console.error('Error fetching root blocks:', error));
+        fetch('http://localhost:5000/root-blocks')
+            .then(response => {
+                // console.log('Initial response:', response);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // console.log('Data fetched:', data);
+                setRootBlocks(data);
+            })
+            .catch(error => {
+                console.error('Error fetching root blocks:', error);
+            });
     }, []);
 
     return (
@@ -20,7 +29,7 @@ function NavBar() {
             <ul>
                 {rootBlocks.map(block => (
                     <li key={block.id}>
-                        <Link to={`/page/${block.id}`}>{block.title}</Link>
+                        <Link to={`/page/${block.id}`}>{block.content}</Link>
                     </li>
                 ))}
             </ul>
