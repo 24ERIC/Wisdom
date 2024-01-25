@@ -13,11 +13,22 @@ orange_text = "\033[38;5;202m"
 reset_format = "\033[0m"
 larger_header = "\033[1m"
 
+def add_fake_data():
+    db.session.query(Block).delete()
+
+    blocks = [
+        Block(id=1, parent_id=None, child_id=2, content="Root 1", type="unordered-list-item", media_data="", depth=0),
+        Block(id=2, parent_id=1, child_id=3, content="2, d=1", type="unordered-list-item", media_data="", depth=1),
+        Block(id=3, parent_id=2, child_id=4, content="3, d=2", type="unordered-list-item", media_data="", depth=2),
+        Block(id=4, parent_id=3, child_id=None, content="4, d=0", type="unordered-list-item", media_data="", depth=0),
+    ]
+    db.session.add_all(blocks)
+    db.session.commit()
+    print("Fake data added successfully!")
 
 
 class Block(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    root_page_id = db.Column(db.Integer)
     parent_id = db.Column(db.Integer)
     child_id = db.Column(db.Integer)
     content = db.Column(db.Text)
@@ -27,7 +38,22 @@ class Block(db.Model):
     
     @classmethod
     def get_root_blocks(cls): 
-        return cls.query.filter(cls.root_page_id.is_(None)).all()
+        return cls.query.filter(cls.parent_id.is_(None)).all()
+    
+    @staticmethod
+    def get_block_and_descendants(block_id):
+        def get_descendants(block):
+            descendants = []
+            current_block = block
+            while current_block:
+                descendants.append(current_block)
+                current_block = Block.query.filter_by(parent_id=current_block.id).first()
+            return descendants
+
+        root_block = Block.query.get(block_id)
+        if not root_block:
+            return None
+        return get_descendants(root_block)
     
     def update_content(self, new_content):
         self.content = new_content
@@ -80,21 +106,40 @@ class Block(db.Model):
 def get_root_blocks():
     try:
         root_blocks = Block.get_root_blocks()
+
         root_blocks_data = [{
             'id': block.id,
-            'root_page_id': block.root_page_id,
             'parent_id': block.parent_id,
             'child_id': block.child_id,
             'content': block.content,
-            'type': block.type.name,  # assuming type is an Enum
+            'type': block.type,
             'media_data': block.media_data,
             'depth': block.depth
         } for block in root_blocks]
-
         return jsonify(root_blocks_data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/page/<int:block_id>', methods=['GET'])
+def get_block_and_its_descendants(block_id):
+    try:
+        blocks = Block.get_block_and_descendants(block_id)
+        if blocks is None:
+            return jsonify({"error": "Block not found"}), 404
+
+        blocks_data = [{
+            'id': block.id,
+            'parent_id': block.parent_id,
+            'child_id': block.child_id,
+            'content': block.content,
+            'type': block.type,
+            'media_data': block.media_data,
+            'depth': block.depth
+        } for block in blocks]
+
+        return jsonify(blocks_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     
     
@@ -108,18 +153,6 @@ def get_root_blocks():
 
 
 
-def add_fake_data():
-    db.session.query(Block).delete()
-    db.session.execute("DELETE FROM sqlite_sequence WHERE name = 'block'")
-    blocks = [
-        Block(id=1, root_page_id=None, parent_id=None, child_id=2, content="Root Block 1", type="page", media_data="", depth=""),
-        Block(id=2, root_page_id=None, parent_id=1, child_id=None, content="Child of Root 1", type="unordered-list-item"),
-        Block(id=3, root_page_id=None, parent_id=None, child_id=4, content="Root Block 2", type="header-one"),
-        Block(id=4, root_page_id=None, parent_id=3, child_id=None, content="Child of Root 2", type="blockquote"),
-    ]
-    db.session.add_all(blocks)
-    db.session.commit()
-    print("Fake data added successfully!")
 
 if __name__ == '__main__':
     with app.app_context():
